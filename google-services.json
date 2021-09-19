@@ -1,0 +1,41 @@
+{
+  "project_info": {
+    "project_number": "798860776333",
+    "firebase_url": "https://thuvien-eef7b-default-rtdb.firebaseio.com",
+    "project_id": "thuvien-eef7b",
+    "storage_bucket": "thuvien-eef7b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798860776333:android:083d73c9977ff8988263c4",
+        "android_client_info": {
+          "package_name": "com.bsdaoquang.thuvienyhoc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "798860776333-9v7jo06b073hllkrdfbduvurveq4a4on.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlQph3qFxVC8-icgEyy-OXAOPk5Klx9TA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798860776333-9v7jo06b073hllkrdfbduvurveq4a4on.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-6209888091137615~5765003393"
+    }
+  ],
+  "configuration_version": "1"
+}

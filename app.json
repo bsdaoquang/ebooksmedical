@@ -1,8 +1,18 @@
 {
   "expo": {
-    "name": "ebooksmedical2",
-    "slug": "ebooksmedical2",
-    "version": "1.0.0",
+    "name": "Sách Y Học Miễn Phí",
+    "slug": "sach-y-hoc-mien-phi",
+    "description": "Tải không giới hạn sách y học miễn phí chất lượng cao.",
+    "version": "1.1.4",
+    "facebookAppId":"462783274861073",
+    "facebookAutoInitEnabled": true,
+    "facebookDisplayName":"Sách Y Học Miễn Phí",
+
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -10,12 +20,14 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "privacy": "public",
     "updates": {
       "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": [
       "**/*"
     ],
+
     "ios": {
       "supportsTablet": true
     },
@@ -23,7 +35,13 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-6209888091137615~5765003393"
+      },
+      "package": "com.bsdaoquang.thuvienyhoc",
+      "versionCode": 15,
+      "permissions": [],
     },
     "web": {
       "favicon": "./assets/favicon.png"
