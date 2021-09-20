@@ -9,7 +9,6 @@ import * as Linking from 'expo-linking';
 import { AntDesign, MaterialIcons, FontAwesome, Entypo, FontAwesome5 } from '@expo/vector-icons';
 import {firebaseApp} from '../../firebaseConfig'
 import * as Localization from 'expo-localization';
-
 import {showAdInter} from '../../admobConfig'
 import {AdMobInterstitial} from 'expo-ads-admob';
 

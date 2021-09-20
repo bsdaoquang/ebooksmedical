@@ -2,7 +2,6 @@ import React, {useEffect , useState} from 'react'
 import {
 	View, Text, TouchableOpacity, StyleSheet, Image, ToastAndroid, FlatList, useWindowDimensions, StatusBar
 } from 'react-native'
-
 import {firebaseApp} from '../../firebaseConfig'
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
