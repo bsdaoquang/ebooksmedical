@@ -17,6 +17,7 @@ import HomeScreen from './screens/home'
 import BookSingle from './screens/books/bookSingle'
 import CategoryScreen from './screens/books/category'
 import BookByKey from './screens/books/bookbykey'
+import ChuyenMuc from './screens/chuyen-muc'
 
 //import SliderSinger from './screens/sliders/sliderSinger'
 //import SearchSlider from './screens/sliders/searchslider'
@@ -42,9 +43,10 @@ const StackEbooks = createStackNavigator();
 function EbookStackScreen(){
     return(
         <StackEbooks.Navigator>
-          <StackEbooks.Screen name="Trang chủ" component={HomeScreen}/>
-          <StackEbooks.Screen name="BookSingle" component={BookSingle}/>
+          <StackEbooks.Screen name="Trang chủ" component={HomeScreen}  options={{headerShown: false}}/>
+          <StackEbooks.Screen name="BookSingle" component={BookSingle} />
           <StackEbooks.Screen name="Chuyên mục sách" component={CategoryScreen}/>
+          <StackEbooks.Screen name="Chuyên Mục" component={ChuyenMuc}/>
           <StackEbooks.Screen name="BookByKey" component={BookByKey}/>
           <StackEbooks.Screen name="Tìm kiếm" component={SearchScreen}/>
           <StackEbooks.Screen name="Thông tin" component={AboutScreen}/>

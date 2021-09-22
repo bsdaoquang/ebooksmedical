@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
 	View, Text, Image, TouchableOpacity, StyleSheet,Button,
 	 ScrollView, ImageBackground, FlatList, useWindowDimensions,
-	 Alert, Share
+	 Alert, Share, ToastAndroid
 }from 'react-native'
 
 import * as Linking from 'expo-linking';
@@ -19,14 +19,8 @@ export default function BookSingle({ route, navigation }){
 
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
-	    	headerTitle: title,
-	    	// headerRight: () => (
-	    	// 	<View style={{paddingHorizontal: 8}} onPress={() => onShare()}>
-	    	// 		<TouchableOpacity>
-	    	// 			<AntDesign name="sharealt" size={24} color="#fff" />
-	    	// 		</TouchableOpacity>
-	    	// 	</View>
-	     //  	),
+	    	headerTitle: 'Book Detail',
+    		headerTransparent: true,
 	    });
   	}, [navigation]);
 
@@ -76,6 +70,8 @@ export default function BookSingle({ route, navigation }){
 
 	function downloadBook(bookURL, down){
 		setLoadAds(true)
+
+		ToastAndroid.show('Đang tải quảng cáo', ToastAndroid.SHORT)
 		showAdInter()
 
 		AdMobInterstitial.addEventListener('interstitialDidClose', () => {	
@@ -84,8 +80,31 @@ export default function BookSingle({ route, navigation }){
 			firebaseApp.database().ref('Ebooks').child(bookId).update({
 				countDown: down + 1
 			}).then(() => {
-				 Linking.openURL(bookURL)
+				 Linking.openURL('https://drive.google.com/uc?export=download&id=' + bookURL)
 			})
+		})
+	}
+
+	function downloadVIP(bookURL, down){
+		//Kiêm tra xem có đăng nhập không
+		firebaseApp.auth().onAuthStateChanged((user) => {
+			if(user){
+				firebaseApp.database().ref('Users').child(user.uid).on('value', snap => {
+					var point = snap.val().medCoin
+					console.log(point)
+					if ((point * 1) > 0) {
+						firebaseApp.database().ref('Ebooks').child(bookId).update({
+							countDown: down + 1
+						}).then(() => {
+							 Linking.openURL('https://drive.google.com/uc?export=download&id=' + bookURL)
+						})
+					}else{
+						alert('Số điểm còn lại không đủ, xin vui lòng nạp thêm')
+					}
+				})
+			}else{
+				alert('Bạn cần đăng nhập để thực hiện chức năng này')
+			}
 		})
 	}
 
@@ -216,73 +235,76 @@ export default function BookSingle({ route, navigation }){
 		})
 	}
 
-	function btnDislike(key){
-		firebaseApp.auth().onAuthStateChanged((user) => {
-			if (user) {
+	// function btnDislike(key){
+	// 	firebaseApp.auth().onAuthStateChanged((user) => {
+	// 		if (user) {
 
-				var dislikes
+	// 			var dislikes
 
-				firebaseApp.database().ref('Users').child(user.uid).once('value', snap => {
+	// 			firebaseApp.database().ref('Users').child(user.uid).once('value', snap => {
 
-					if (snap.val().dislike !== '') {
-						dislikes = snap.val().dislike
-					}else{
-						dislikes = []
-					}
+	// 				if (snap.val().dislike !== '') {
+	// 					dislikes = snap.val().dislike
+	// 				}else{
+	// 					dislikes = []
+	// 				}
 
-					//like thì phải bỏ dislike
-					if (dislike === true) {
-						//người dùng đã thích
+	// 				//like thì phải bỏ dislike
+	// 				if (dislike === true) {
+	// 					//người dùng đã thích
 						
-						//cộng đi 1 lần thích
-						firebaseApp.database().ref('Ebooks').child(key).update({
-							countDislike: ebook.countDislike - 1
-						})
+	// 					//cộng đi 1 lần thích
+	// 					firebaseApp.database().ref('Ebooks').child(key).update({
+	// 						countDislike: ebook.countDislike - 1
+	// 					})
 
-						setLike(false)
-						// xóa khỏi database của người dùng
-						var keyIndex = dislikes.indexOf(key)
+	// 					setLike(false)
+	// 					// xóa khỏi database của người dùng
+	// 					var keyIndex = dislikes.indexOf(key)
 
-						dislikes.splice(keyIndex, 1)
+	// 					dislikes.splice(keyIndex, 1)
 
-						firebaseApp.database().ref('Users').child(user.uid).update({
-							dislike: dislikes
-						})
+	// 					firebaseApp.database().ref('Users').child(user.uid).update({
+	// 						dislike: dislikes
+	// 					})
 
-					}else{
+	// 				}else{
 			
-						//cộng thêm 1 lần thích
-						firebaseApp.database().ref('Ebooks').child(key).update({
-							countDislike: ebook.countDislike + 1
-						})
+	// 					//cộng thêm 1 lần thích
+	// 					firebaseApp.database().ref('Ebooks').child(key).update({
+	// 						countDislike: ebook.countDislike + 1
+	// 					})
 
-						setLike(true)
+	// 					setLike(true)
 
-						// thêm vào database của người dùng
-						dislikes.push(key)
-						firebaseApp.database().ref('Users').child(user.uid).update({
-							dislike: dislikes
-						})
-					}
-				})
-			}else{
-				alert('Bạn cần phải đăng nhập trước')
-			}
-		})
-	}
+	// 					// thêm vào database của người dùng
+	// 					dislikes.push(key)
+	// 					firebaseApp.database().ref('Users').child(user.uid).update({
+	// 						dislike: dislikes
+	// 					})
+	// 				}
+	// 			})
+	// 		}else{
+	// 			alert('Bạn cần phải đăng nhập trước')
+	// 		}
+	// 	})
+	// }
 
 	var language = Localization.locale
 
 	return (
 		<View style={styles.container}>
-			<ScrollView>
-				<View style={styles.headerContainer}>
-					<View>
+			<ScrollView style={{bottom: 60}}>
+				<ImageBackground
+					source={ebook.image ? {uri: ebook.image} : ''}
+					style={{backgroundColor: 'coral', opacity: 0.9}}>
+					<View style={{backgroundColor:'transparent', opacity: 0.6}}></View>
+					<View style={styles.headerContainer}>
 						<Image 
 							source={ebook.image ? {uri: ebook.image} : ''}
 							style={styles.imgHeader}
 						/>
-						<View style={{flexDirection: 'row', marginTop: 15, justifyContent: 'center'}}>
+						{/*<View style={{flexDirection: 'row', marginTop: 15, justifyContent: 'center'}}>
 							<TouchableOpacity 
 								onPress={() => btnLike(ebook.key)}
 								style={{padding: 5}}>
@@ -294,69 +316,62 @@ export default function BookSingle({ route, navigation }){
 								style={{padding: 5}}>
 								<Text><AntDesign name="dislike1" size={20} color={dislike === true ? '#3498db' : '#7f8b8b'}/> {ebook.countDislike}</Text>
 							</TouchableOpacity>
+						</View>*/}
+
+						<View style={styles.titleHeader}>
+							<Text numberOfLines={1} style={styles.title}>{ebook.title}</Text>
+							<Text numberOfLines={1} style={styles.author}>{ebook.author}</Text>
+
+							{/*<View style={{...styles.bottomDownload, flexDirection: 'row'}}>
+								{
+									loadAds === true ? <Text>Đang tải...</Text>
+									:
+									<TouchableOpacity style={styles.btnDownload}
+										onPress={() => downloadBook(ebook.downloadLink, ebook.countDown)}
+									>
+										<AntDesign name="download" size={18} color="white" />
+										<Text style={{textTransform: 'uppercase', color: 'white', marginLeft: 5}}> Tải xuống</Text>
+									</TouchableOpacity>
+								}
+								
+							</View>*/}
 						</View>
-					</View>
-					
 
-					<View style={styles.titleHeader}>
-						<Text style={styles.title}>{ebook.title}</Text>
-						<Text style={styles.author}>{ebook.author}</Text>
+						<View style={{...styles.reviewContainer, backgroundColor: '#bdc3c7', borderRadius: 15, paddingVertical: 15, opacity: 0.6}}>
+							{/*Phần like share comments*/}
+							<View style={{flexDirection: 'row', width: '100%', justifyContent: 'space-evenly'}}>
+								<View style={styles.iconTop}>
+									<Text style={styles.titleIcon}>{ebook.countDown}</Text>
+									<Text style={{color: '#34495e'}}>Downloaded</Text>
+								</View>
 
-						<View style={{...styles.bottomDownload, flexDirection: 'row'}}>
-							{
-								loadAds === true ? <Text>Đang tải...</Text>
-								:
-								<TouchableOpacity style={styles.btnDownload}
-									onPress={() => downloadBook(ebook.downloadLink, ebook.countDown)}
-								>
-									<AntDesign name="download" size={18} color="white" />
-									<Text style={{textTransform: 'uppercase', color: 'white', marginLeft: 5}}> Tải xuống</Text>
-								</TouchableOpacity>
-							}
-							
+								<View style={styles.iconTop}>
+									<Text style={styles.titleIcon}>{ebook.countView}</Text>
+									<Text style={{color: '#34495e'}}>View</Text>
+								</View>
+
+								<View style={styles.iconTop}>
+									<Text style={styles.titleIcon}>{ebook.ngonngu === 'Tiếng Việt' ? 'Vie' : 'Eng'}</Text>
+									<Text style={{color: '#34495e'}}>Language</Text>
+								</View>
+							</View>
 						</View>
-					</View>
-				</View>
 
-				<View style={{padding: 8, backgroundColor: '#fafafa'}}>
+
+					</View>
+				</ImageBackground>
+				
+				{/*<View style={{padding: 8, backgroundColor: '#fafafa'}}>
 					<TouchableOpacity style={{flexDirection: 'row'}} onPress={() => Linking.openURL('https://m.me/yhocso')}>
 						<FontAwesome name="warning" size={22} color="#f1c40f" />
 						<Text style={{color: '#212121'}}> Báo lỗi tải</Text>
 					</TouchableOpacity>
-				</View>
-
-				<View style={styles.reviewContainer}>
-					{/*Phần like share comments*/}
-					<View style={{flexDirection: 'row'}}>
-						<View style={{width: '50%', justifyContent: 'center', alignItems: 'center'}}>
-							<TouchableOpacity onPress={() => onShare(ebook.title, ebook.description)}>
-								<Entypo name="share" size={24} color='#34495e'/>
-							</TouchableOpacity>
-							<Text style={{marginTop: 8}}>{ebook.countShare}</Text>
-						</View>
-						<View style={{width: '50%', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row'}}>
-							<View style={{justifyContent: 'center', alignItems: 'center'}}>
-								<FontAwesome5 name="eye" size={24} color='#34495e'/>
-								<Text style={{marginTop: 8}}>{ebook.countView}</Text>
-							</View>
-
-							<View style={{justifyContent: 'center', alignItems: 'center'}}>
-								<AntDesign name="download" size={24} color='#34495e'/>
-								<Text style={{marginTop: 8}}>{ebook.countDown}</Text>
-							</View>
-
-							<View style={{justifyContent: 'center', alignItems: 'center'}}>
-								<FontAwesome name="commenting" size={24} color='#34495e'/>
-								<Text style={{marginTop: 8}}>{countComments}</Text>
-							</View>
-						</View>
-					</View>
-				</View>
+				</View>*/}
 
 				{
 					ebook.description !== '' ?
 						<View style={styles.reviewContainer}>
-							<Text style={styles.title}>Giới thiệu</Text>
+							<Text style={{...styles.title, paddingVertical: 15}}>Description</Text>
 							<Text numberOfLines={readLine} style={styles.tetxReview}>{ebook.description}</Text>
 							<TouchableOpacity 
 							style={styles.buttonReadmore}
@@ -368,21 +383,21 @@ export default function BookSingle({ route, navigation }){
 				}
 				
 				<View style={styles.reviewContainer}>
-					<Text style={styles.title}>Thông tin chi tiết</Text>
+					<Text style={{...styles.title, paddingVertical: 10}}>Product details</Text>
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Năm xuất bản: </Text>
+							<Text style={styles.textTitleInfo}>Publisher: </Text>
 							<TouchableOpacity
 								onPress={() => navigation.navigate('BookByKey', {key: ebook.datePublish, by: 'datePublish'})}
 							>
-								<Text style={{...styles.textDescInfo, color: '#3498db'}}>{ebook.datePublish}</Text>
+								<Text style={{...styles.textDescInfo, color: '#3498db'}}>{ebook.publish + ' ' + ebook.datePublish}</Text>
 							</TouchableOpacity>
 						</View>
 					</View>
 
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Tác giả: </Text>
+							<Text style={styles.textTitleInfo}>Author: </Text>
 							<TouchableOpacity
 								onPress={() => navigation.navigate('BookByKey', {key: ebook.author, by: 'author'})}
 							>
@@ -393,14 +408,14 @@ export default function BookSingle({ route, navigation }){
 
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Chuyên mục: </Text>
-							<Text style={{...styles.textTitleInfo, flex: 1}}>{categories}</Text>
+							<Text style={styles.textTitleInfo}>Category: </Text>
+							<Text style={{...styles.textTitleInfo, flex: 1, fontWeight: 'normal'}}>{categories}</Text>
 						</View>
 					</View>
 
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Ngôn ngữ: </Text>
+							<Text style={styles.textTitleInfo}>Language: </Text>
 							<TouchableOpacity
 								onPress={() => navigation.navigate('BookByKey', {key: ebook.ngonngu, by: 'ngonngu'})}
 							>
@@ -411,24 +426,34 @@ export default function BookSingle({ route, navigation }){
 
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Tải lên: </Text>
+							<Text style={styles.textTitleInfo}>Upload: </Text>
 							<Text style={{...styles.textDescInfo, color: '#3498db'}}>{ebook.displayName}</Text>
 						</View>
 					</View>
-
-					<View style={styles.infoBook}>
-						<View style={{...styles.titleInfo, justifyContent:'center', alignItems: 'center'}}>
-							<Entypo name="flag" size={24} color="#e74c3c"/>
-							<TouchableOpacity
-								onPress={() => removeReques(ebook.title, ebook.author)}
-							>
-								<Text style={{...styles.textTitleInfo, paddingHorizontal: 8}}>Yêu cầu gỡ bỏ</Text>
-							</TouchableOpacity>
-						</View>
-					</View>
 				</View>
-			
+				<View style={styles.reviewContainer}>
+					<Text style={{...styles.title, paddingVertical: 8}}>Products related to this item</Text>
+				</View>
 			</ScrollView>
+			<View style={styles.btnDownloadContainer}>
+				<TouchableOpacity style={{justifyContent: 'center', alignItems: 'center'}}
+					onPress={() => btnLike(ebook.key)}>
+					<MaterialIcons name={like === true ? 'bookmark' : 'bookmark-outline'} size={24} color={like === true ? '#3498db' : '#7f8b8b'}/>
+				</TouchableOpacity>
+
+				<View style={{flexDirection: 'row', flex: 1}}>
+					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#d35400'}}
+						onPress={() => downloadVIP(ebook.downloadLink, ebook.countDown)}>
+						<Text style={{color: 'white'}}>Download Now</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#2980b9'}}
+						onPress={() => downloadBook(ebook.downloadLink, ebook.countDown)}>
+						<Text style={{color: 'white'}}>Watch Ads</Text>
+					</TouchableOpacity>
+				</View>
+				
+			</View>
 		</View>
 	);
 }
@@ -437,40 +462,45 @@ const styles = StyleSheet.create({
 
 	container: {
 		flex: 1,
-		backgroundColor: '#e0e0e0',
+		backgroundColor: '#fafafa',
 	},
 
 	headerContainer:{
-		flexDirection: 'row',
-		padding: 15,
 		flex: 1,
 	    resizeMode: 'cover',
-	    backgroundColor: '#fafafa'
+	    backgroundColor: 'white',
+	    justifyContent: 'center',
+	    alignItems: 'center',
+	    paddingTop: 100,
+	    paddingBottom: 40,
+	    paddingHorizontal: 20
 	},
 
 	imgHeader:{
-		width: 120,
-		height: 180,
+		width: 180,
+		height: 260,
 		borderRadius: 5,
 	},
 
 	titleHeader:{
 		flex: 1,
-		paddingHorizontal: 15,
+		paddingVertical: 15,
+		justifyContent: 'center',
+		alignItems: 'center'
 
 	},
 
 	title:{
 		fontWeight: 'bold',
-		color: '#000',
+		color: '#414141',
 		fontSize: 18,
-		marginBottom: 10,
-
+		justifyContent: 'center'
 	},
 
 	author:{
 		fontSize: 16,
-		color: '#676767'
+		color: '#676767',
+		justifyContent: 'center'
 	},
 
 	ratingContainer:{
@@ -532,11 +562,13 @@ const styles = StyleSheet.create({
 
 	titleInfo:{
 		flex: 1,
-		flexDirection: 'row'
+		flexDirection: 'row',
+		paddingVertical: 8
 	},
 
 	textTitleInfo: {
-		color: '#676767'
+		color: '#676767',
+		fontWeight: 'bold'
 	},
 	bookContain:{
 
@@ -595,6 +627,38 @@ const styles = StyleSheet.create({
 
 	bookAuthor:{
 		color: '#676767'
+	},
+
+	iconTop:{
+		justifyContent: 'center', 
+		alignItems: 'center', 
+		flex: 1,
+		color: 'white'
+	},
+
+	titleIcon: {
+		fontWeight: 'bold',
+		color: '#34495e',
+		fontSize: 20
+	},
+
+	btnDownloadContainer:{
+		position: 'absolute',
+		bottom: 0,
+		left: 0,
+		right: 0,
+		padding: 11,
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+
+	btnDown:{
+		justifyContent: 'center',
+		flex: 1,
+		alignItems: 'center',
+		marginRight: 5,
+		borderRadius: 5,
+		paddingVertical: 8
 	}
 
 })

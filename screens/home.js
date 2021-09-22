@@ -8,49 +8,6 @@ import * as StoreReview from 'expo-store-review'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import * as Linking from 'expo-linking';
 
-var EBOOKS = []
-var CATs = []
-var TOPDOWNLOAD = []
-var TOPVIEW = []
-
-firebaseApp.database().ref('Ebooks').orderByChild('dateUpdate').limitToLast(10).on('value', (snapshot) => {
-	snapshot.forEach(item => {
-		if (item.val().status !== 'Bản nháp') {
-			var ebook = {}
-	  		ebook = item.val()
-	  		ebook.key = item.key
-	  		EBOOKS.unshift(ebook)
-		}
-  	})
-})
-
-firebaseApp.database().ref('chuyenMuc').orderByChild('title').limitToFirst(5).on('value', (snapshot) => {
-	snapshot.forEach(item => {
-		var cat = {}
-  		cat = item.val()
-  		cat.key = item.key
-  		CATs.push(cat)
-  	})
-})
-
-firebaseApp.database().ref('Ebooks').orderByChild('countDown').limitToLast(5).on('value', (snapshot) => {
-	snapshot.forEach(item => {
-  		var ebook = {}
-  		ebook = item.val()
-  		ebook.key = item.key
-  		TOPDOWNLOAD.unshift(ebook)
-  	})
-})
-
-firebaseApp.database().ref('Ebooks').orderByChild('countView').limitToLast(5).on('value', (snapshot) => {
-	snapshot.forEach(item => {
-  		var ebook = {}
-  		ebook = item.val()
-  		ebook.key = item.key
-  		TOPVIEW.unshift(ebook)
-  	})
-})
-
 export default function HomeScreen({navigation}){
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
@@ -71,6 +28,97 @@ export default function HomeScreen({navigation}){
 	    });
   	}, [navigation]);
 	//vùng hiển thị sách
+
+	var EBOOKS = []
+	var CATs = []
+	var TOPDOWNLOAD = []
+	var TOPVIEW = []
+
+	const getNewBook = async() => {
+		await firebaseApp.database().ref('Ebooks').orderByChild('dateUpdate').limitToLast(10).on('value', (snapshot) => {
+			snapshot.forEach(item => {
+				if (item.val().status !== 'Bản nháp' && item.val().type === 'Ebook') {
+					var ebook = {}
+			  		ebook = item.val()
+			  		ebook.key = item.key
+			  		EBOOKS.unshift(ebook)
+				}
+		  	})
+		})
+	}
+	getNewBook()
+
+	const getCats = async () => {
+		await firebaseApp.database().ref('chuyenMuc').limitToFirst(10).on('value', snapcat => {
+			snapcat.forEach(itemcat => {
+				var cat = {}
+				cat = itemcat.val()
+		  		cat.key = itemcat.key
+		  		CATs.push(cat)		
+		  	})
+		})
+	}
+
+	getCats()
+
+	const getTopDown = async () => {
+		await firebaseApp.database().ref('Ebooks').orderByChild('countDown').limitToLast(5).on('value', snap => {
+			snap.forEach(item => {
+				if (item.val().status !== 'Bản nháp' && item.val().type === 'Ebook') {
+					var ebook = {}
+			  		ebook = item.val()
+			  		ebook.key = item.key
+			  		TOPDOWNLOAD.unshift(ebook)
+				}
+		  		
+		  	})
+		})
+	}
+
+	getTopDown()
+
+	const getTopView = async () => {
+		await firebaseApp.database().ref('Ebooks').orderByChild('countView').limitToLast(5).on('value', snapview => {
+			snapview.forEach(itemview => {
+				if (itemview.val().status !== 'Bản nháp' && itemview.val().type === 'Ebook') {
+					var ebook = {}
+			  		ebook = itemview.val()
+			  		ebook.key = itemview.key
+			  		TOPVIEW.unshift(ebook)
+				}
+		  		
+		  	})
+		})
+	}
+
+	getTopView()
+
+	const [load, setload] = useState(false)
+	const [uid, setUid] = useState()
+	const [top, settop] = useState(1)
+
+	firebaseApp.auth().onAuthStateChanged((user) => {
+		if (user) {
+			setUid(user.uid)
+		}
+	})
+
+	var dataUser = {}	
+	const loadDataUser = async() => {
+		await firebaseApp.database().ref('Users').child(uid).on('value', snapuser => {
+			dataUser = snapuser.val()
+		})
+	}
+
+	if (dataUser) {
+		loadDataUser()
+	}
+
+
+
+  	setTimeout(() => {
+		setload(true)
+	}, 3000)
 
 	var download = []
 	TOPDOWNLOAD.forEach(item => {
@@ -140,49 +188,70 @@ export default function HomeScreen({navigation}){
 		)
 	})
 
-	const [user, setUser] = useState({})
-
-	firebaseApp.auth().onAuthStateChanged((user) => {
-		if (user) {
-			setUser(user)
-		}
-	})
-
 	//Đây là mã giúp hiện phần đánh giá
 	if (StoreReview.hasAction()) {
 	    StoreReview.storeUrl('https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc')
 	    StoreReview.requestReview()
   	}
 
-  	const [load, setload] = useState(false)
-
-  	if (EBOOKS.length === 0) {
-  		setTimeout(() => {
-			setload(true)
-		}, 3000)
-  	}
-
-  	const [top, settop] = useState(1)
-
 	return (
 		<ScrollView style={styles.container}>
 			<StatusBar
-	        animated={true}
-	        StatusBarStyle='default'
+		        animated={true}
+		        hidden={true}
+		        backgroundColor='white'
 	        />
 
 	        {
-	        	user ? 
-					<View style={{margin: 10, flex: 1, backgroundColor: '#bdc3c7', padding: 10, borderRadius: 10}}>
-			        	<Text style={{...styles.title, fontWeight: 'normal'}}>Welcome back</Text>
-			        	<Text style={{fontWeight: 'bold', fontSize: 24}}>{user.displayName}</Text>
-			        </View>
-	        	: null
+	        	dataUser ? 
+		        	dataUser.displayName !== undefined ?
+		        		<View style={{flexDirection: 'row', backgroundColor: '#ecf0f1', padding: 10, borderRadius: 10, margin: 10}}>
+		        			<View style={{flex: 1}}>
+					        	<Text style={{...styles.title, fontWeight: 'normal'}}>Chào mừng bạn!</Text>
+					        	<Text style={{fontWeight: 'bold', fontSize: 24}}>{dataUser.displayName}</Text>
+				        	</View>
+				        	<TouchableOpacity style={{
+				        		borderRadius: 50, 
+				        		backgroundColor: 'coral', 
+				        		justifyContents: 'center',
+				        		padding: 5,
+				        		width: 50,
+				        		height: 50}}>
+				        		<View style={{flex: 1, alignItems: 'center'}}>
+				        			<Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>{(dataUser.medCoin / 1000).toFixed(0)}</Text>
+									<Text style={{color: 'white'}}>điểm</Text>	
+				        		</View>
+				        	</TouchableOpacity>
+		        		</View>
+						
+		        	: null
+		        : null
 	        }
+	        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+	        	<TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => navigation.openDrawer()}>
+	        		<AntDesign name="menuunfold" size={28} color="#34495e" />
+	        	</TouchableOpacity>
+
+	        	<TouchableOpacity style={{
+		        	borderRadius: 20,
+		        	borderWidth: 1,
+		        	borderColor: '#212121',
+		        	padding: 5,
+		        	marginVertical: 10,
+		        	flexDirection: 'row',
+		        	alignItems: 'center',
+		        	flex: 1
+		        }}
+		        	onPress={() => navigation.navigate('Tìm kiếm')}>
+		        	<Text style={{...styles.seemore, flex: 1}}>Bạn muốn tìm gì hôm nay?</Text>
+		        	<AntDesign name="search1" size={20} color="#34495e" />
+		        </TouchableOpacity>	
+	        </View>
 	        
+
 	        <View style={styles.titleContainer}>
 	        	<Text style={styles.title}>The Latest</Text>
-	        	<TouchableOpacity>
+	        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'New', name: 'Chuyên mục'})}>
 	        		<Text style={styles.seemore}>see more</Text>
 	        	</TouchableOpacity>
 	        </View>
@@ -203,7 +272,7 @@ export default function HomeScreen({navigation}){
 
 	        <View style={styles.titleContainer}>
 	        	<Text style={styles.title}>Categories</Text>
-	        	<TouchableOpacity>
+	        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'Chuyên mục', name: 'Chuyên mục'})}>
 	        		<Text style={styles.seemore}>see more</Text>
 	        	</TouchableOpacity>
 	        </View>
@@ -226,7 +295,6 @@ export default function HomeScreen({navigation}){
 		  	 		keyExtractor={item => item.key}
 	  	 		/>
 	        </View>
-
 
 	        <View style={{marginVertical: 20, paddingHorizontal: 10, flexDirection: 'row'}}>
 	        	<TouchableOpacity style={styles.btnTag} onPress={() => settop(1)}>
