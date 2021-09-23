@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import { Text, View, StyleSheet, Image, FlatList, ScrollView,TouchableOpacity, SafeAreaView, Alert, TextInput,
 		useWindowDimensions, StatusBar, ToastAndroid
 	} from 'react-native'
@@ -7,27 +7,10 @@ import {firebaseApp} from '../firebaseConfig'
 import * as StoreReview from 'expo-store-review'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import * as Linking from 'expo-linking';
+import NetInfo from '@react-native-community/netinfo';
 
 export default function HomeScreen({navigation}){
-	React.useLayoutEffect(() => {
-	    navigation.setOptions({
-	    	title: '',
-	    	headerRight: () => (
-		      	<View style={{flexDirection: 'row', justifyContents: 'center', alignItems: 'center'}}>
-		      		<TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => navigation.navigate('Tìm kiếm')}>
-			        	<AntDesign name="search1" size={24} color="#34495e" />
-		        	</TouchableOpacity>
-		      	</View>
-	        
-	      	),
-	      	headerLeft: () => (
-				<TouchableOpacity style={{marginLeft:10}} onPress={() => navigation.openDrawer()}>
-					<AntDesign name="menuunfold" size={24} color="#34495e"/>
-				</TouchableOpacity>	        
-	      	),
-	    });
-  	}, [navigation]);
-	//vùng hiển thị sách
+	const [net, setNet] = useState(true)
 
 	var EBOOKS = []
 	var CATs = []
@@ -93,7 +76,7 @@ export default function HomeScreen({navigation}){
 
 	getTopView()
 
-	const [load, setload] = useState(false)
+	const [load, setLoad] = useState(false)
 	const [uid, setUid] = useState()
 	const [top, settop] = useState(1)
 
@@ -114,12 +97,6 @@ export default function HomeScreen({navigation}){
 		loadDataUser()
 	}
 
-
-
-  	setTimeout(() => {
-		setload(true)
-	}, 3000)
-
 	var download = []
 	TOPDOWNLOAD.forEach(item => {
 
@@ -131,7 +108,7 @@ export default function HomeScreen({navigation}){
 		})
 		
 		download.push(
-			<View style={{flexDirection: 'row', justifyContents: 'center', marginVertical: 10}}>
+			<View key={item.key} style={{flexDirection: 'row', justifyContents: 'center', marginVertical: 10}}>
 				<TouchableOpacity style={{flex: 1, flexDirection: 'row'}} 
 					onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title: item.title})}>
 					<Image style={{width: 100, height: 150, borderRadius: 5}} source={{uri: item.image}} />
@@ -165,7 +142,7 @@ export default function HomeScreen({navigation}){
 		})
 
 		viewbook.push(
-			<View style={{flexDirection: 'row', justifyContents: 'center', marginVertical: 10}}>
+			<View key={item.key} style={{flexDirection: 'row', justifyContents: 'center', marginVertical: 10}}>
 				<TouchableOpacity style={{flex: 1, flexDirection: 'row'}} 
 					onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
 					<Image style={{width: 100, height: 150, borderRadius: 5}} source={{uri: item.image}} />
@@ -194,123 +171,158 @@ export default function HomeScreen({navigation}){
 	    StoreReview.requestReview()
   	}
 
+  	NetInfo.fetch().then(state => {
+	  	setNet(state.isConnected)
+
+	  	if (state.isConnected) {
+	  		setTimeout(() => {
+	  			setLoad(true)
+	  		}, 2000)
+
+	  		if (CATs.length == 0) {
+	  			setLoad(false)
+	  		}
+	  	}
+
+	});
+
 	return (
-		<ScrollView style={styles.container}>
-			<StatusBar
-		        animated={true}
-		        hidden={true}
-		        backgroundColor='white'
-	        />
 
-	        {
-	        	dataUser ? 
-		        	dataUser.displayName !== undefined ?
-		        		<View style={{flexDirection: 'row', backgroundColor: '#ecf0f1', padding: 10, borderRadius: 10, margin: 10}}>
-		        			<View style={{flex: 1}}>
-					        	<Text style={{...styles.title, fontWeight: 'normal'}}>Chào mừng bạn!</Text>
-					        	<Text style={{fontWeight: 'bold', fontSize: 24}}>{dataUser.displayName}</Text>
-				        	</View>
-				        	<TouchableOpacity style={{
-				        		borderRadius: 50, 
-				        		backgroundColor: 'coral', 
-				        		justifyContents: 'center',
-				        		padding: 5,
-				        		width: 50,
-				        		height: 50}}>
-				        		<View style={{flex: 1, alignItems: 'center'}}>
-				        			<Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>{(dataUser.medCoin / 1000).toFixed(0)}</Text>
-									<Text style={{color: 'white'}}>điểm</Text>	
+		<View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+			{
+				net == false ?
+				<View>
+					<Text>Lỗi kết nối</Text>
+				</View>
+
+				: 
+
+				EBOOKS.length == 0 ?
+
+				<View>
+					<Text>Loadding...</Text>
+				</View>
+
+				: 
+
+				<ScrollView style={styles.container}>
+					<StatusBar
+				        animated={true}
+				        hidden={true}
+				        backgroundColor='white'
+			        />
+
+			        {
+			        	dataUser ? 
+				        	dataUser.displayName !== undefined ?
+				        		<View style={{flexDirection: 'row', backgroundColor: '#ecf0f1', padding: 10, borderRadius: 10, margin: 10}}>
+				        			<View style={{flex: 1}}>
+							        	<Text style={{...styles.title, fontWeight: 'normal'}}>Chào mừng bạn!</Text>
+							        	<Text style={{fontWeight: 'bold', fontSize: 24}}>{dataUser.displayName}</Text>
+						        	</View>
+						        	<TouchableOpacity style={{
+						        		borderRadius: 50, 
+						        		backgroundColor: 'coral', 
+						        		justifyContents: 'center',
+						        		padding: 5,
+						        		width: 60,
+						        		height: 60}}>
+						        		<View style={{flex: 1, alignItems: 'center'}}>
+						        			<Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>{(dataUser.medCoin / 1000).toFixed(0)}</Text>
+											<Text style={{color: 'white'}}>điểm</Text>	
+						        		</View>
+						        	</TouchableOpacity>
 				        		</View>
-				        	</TouchableOpacity>
-		        		</View>
-						
-		        	: null
-		        : null
-	        }
-	        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-	        	<TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => navigation.openDrawer()}>
-	        		<AntDesign name="menuunfold" size={28} color="#34495e" />
-	        	</TouchableOpacity>
+								
+				        	: null
+				        : null
+			        }
+			        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+			        	<TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => navigation.openDrawer()}>
+			        		<AntDesign name="menuunfold" size={28} color="#34495e" />
+			        	</TouchableOpacity>
 
-	        	<TouchableOpacity style={{
-		        	borderRadius: 20,
-		        	borderWidth: 1,
-		        	borderColor: '#212121',
-		        	padding: 5,
-		        	marginVertical: 10,
-		        	flexDirection: 'row',
-		        	alignItems: 'center',
-		        	flex: 1
-		        }}
-		        	onPress={() => navigation.navigate('Tìm kiếm')}>
-		        	<Text style={{...styles.seemore, flex: 1}}>Bạn muốn tìm gì hôm nay?</Text>
-		        	<AntDesign name="search1" size={20} color="#34495e" />
-		        </TouchableOpacity>	
-	        </View>
-	        
+			        	<TouchableOpacity style={{
+				        	borderRadius: 20,
+				        	borderWidth: 1,
+				        	borderColor: '#212121',
+				        	padding: 5,
+				        	marginVertical: 10,
+				        	flexDirection: 'row',
+				        	alignItems: 'center',
+				        	flex: 1
+				        }}
+				        	onPress={() => navigation.navigate('Tìm kiếm')}>
+				        	<Text style={{...styles.seemore, flex: 1}}>Bạn muốn tìm gì hôm nay?</Text>
+				        	<AntDesign name="search1" size={20} color="#34495e" />
+				        </TouchableOpacity>	
+			        </View>
+			        
 
-	        <View style={styles.titleContainer}>
-	        	<Text style={styles.title}>The Latest</Text>
-	        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'New', name: 'Chuyên mục'})}>
-	        		<Text style={styles.seemore}>see more</Text>
-	        	</TouchableOpacity>
-	        </View>
+			        <View style={styles.titleContainer}>
+			        	<Text style={styles.title}>The Latest</Text>
+			        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'New', name: 'Chuyên mục'})}>
+			        		<Text style={styles.seemore}>see more</Text>
+			        	</TouchableOpacity>
+			        </View>
 
-	        <View style={styles.bookContainerHorizontal}>
-	        	<FlatList
-		  			data={EBOOKS} 
-		  			renderItem={({ item }) => (
-		                <TouchableOpacity
-		                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
-			            	<Image style={styles.bookImg} source={{uri: item.image}}/>
-		                </TouchableOpacity>
-			        )}
-					horizontal={true}
-		  	 		keyExtractor={item => item.key}
-	  	 		/>
-	        </View>
+			        <View style={styles.bookContainerHorizontal}>
+			        	<FlatList
+				  			data={EBOOKS} 
+				  			renderItem={({ item }) => (
+				                <TouchableOpacity
+				                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
+					            	<Image style={styles.bookImg} source={{uri: item.image}}/>
+				                </TouchableOpacity>
+					        )}
+							horizontal={true}
+				  	 		keyExtractor={item => item.key}
+			  	 		/>
+			        </View>
 
-	        <View style={styles.titleContainer}>
-	        	<Text style={styles.title}>Categories</Text>
-	        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'Chuyên mục', name: 'Chuyên mục'})}>
-	        		<Text style={styles.seemore}>see more</Text>
-	        	</TouchableOpacity>
-	        </View>
+			        <View style={styles.titleContainer}>
+			        	<Text style={styles.title}>Categories</Text>
+			        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'Chuyên mục', name: 'Chuyên mục'})}>
+			        		<Text style={styles.seemore}>see more</Text>
+			        	</TouchableOpacity>
+			        </View>
 
-	        <View style={styles.bookContainerHorizontal}>
-	        	<FlatList
-		  			data={CATs} 
-		  			renderItem={({ item }) => (
-		                <TouchableOpacity style={styles.btnCat} 
-		                	onPress={() => navigation.navigate('Chuyên mục sách', {title: item.title, id: item.key})}>
-		                	{
-		                		item.img !== '' ?
-									<Image style={styles.catImg} source={{uri: item.img}}/>
-		                		: <AntDesign name="tagso" size={50} color="#3498db" style={styles.catImg} />
-		                	}
-			            	<Text numberOfLines={1} style={styles.catTitle}>{item.title}</Text>
-		                </TouchableOpacity>
-			        )}
-					horizontal={true}
-		  	 		keyExtractor={item => item.key}
-	  	 		/>
-	        </View>
+			        <View style={styles.bookContainerHorizontal}>
+			        	<FlatList
+				  			data={CATs} 
+				  			renderItem={({ item }) => (
+				                <TouchableOpacity style={styles.btnCat} 
+				                	onPress={() => navigation.navigate('Chuyên mục sách', {title: item.title, id: item.key})}>
+				                	{
+				                		item.img !== '' ?
+											<Image style={styles.catImg} source={{uri: item.img}}/>
+				                		: <AntDesign name="tagso" size={50} color="#3498db" style={styles.catImg} />
+				                	}
+					            	<Text numberOfLines={1} style={styles.catTitle}>{item.title}</Text>
+				                </TouchableOpacity>
+					        )}
+							horizontal={true}
+				  	 		keyExtractor={item => item.key}
+			  	 		/>
+			        </View>
 
-	        <View style={{marginVertical: 20, paddingHorizontal: 10, flexDirection: 'row'}}>
-	        	<TouchableOpacity style={styles.btnTag} onPress={() => settop(1)}>
-	        		<Text style={{...styles.title, color: top === 1 ? '#2c3e50' : '#95a5a6', borderBottomWidth: top === 1 ? 1 : null, borderBottomColor: '#2c3e50', paddingBottom: 5}}>Top Download</Text>
-	        	</TouchableOpacity>
-	        	<TouchableOpacity style={styles.btnTag} onPress={() => settop(2)}>
-	        		<Text style={{...styles.title, color: top === 2 ? '#2c3e50' : '#95a5a6', borderBottomWidth: top === 2 ? 1 : null, borderBottomColor: '#2c3e50', paddingBottom: 5}}>Top Read</Text>
-	        	</TouchableOpacity>
-	        </View>
-	        <View style={{paddingHorizontal: 10, flex: 1}}>
-	        	{
-	        		top === 1 ? download : viewbook
-	        	}
-	        </View>
-	        
-		</ScrollView>
+			        <View style={{marginVertical: 20, paddingHorizontal: 10, flexDirection: 'row'}}>
+			        	<TouchableOpacity style={styles.btnTag} onPress={() => settop(1)}>
+			        		<Text style={{...styles.title, color: top === 1 ? '#2c3e50' : '#95a5a6', borderBottomWidth: top === 1 ? 1 : null, borderBottomColor: '#2c3e50', paddingBottom: 5}}>Top Download</Text>
+			        	</TouchableOpacity>
+			        	<TouchableOpacity style={styles.btnTag} onPress={() => settop(2)}>
+			        		<Text style={{...styles.title, color: top === 2 ? '#2c3e50' : '#95a5a6', borderBottomWidth: top === 2 ? 1 : null, borderBottomColor: '#2c3e50', paddingBottom: 5}}>Top Read</Text>
+			        	</TouchableOpacity>
+			        </View>
+			        <View style={{paddingHorizontal: 10, flex: 1}}>
+			        	{
+			        		top === 1 ? download : viewbook
+			        	}
+			        </View>
+				</ScrollView>
+			}
+		</View>
+
 		
 	);
 }

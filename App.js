@@ -36,6 +36,8 @@ import SearchScreen from './screens/search'
 import AboutScreen from './screens/about'
 import DonateScreen from './screens/about'
 
+console.disableYellowBox = true;
+
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator()
 
@@ -95,7 +97,7 @@ export default function App(){
   return(
      <NavigationContainer>
         <Drawer.Navigator drawerContent = {(props) => <DrawerCustom {...props} />}>
-          <Drawer.Screen name='Ebooks' component={EbookStackScreen}/>
+          <Drawer.Screen name='HomeScreen' component={EbookStackScreen}/>
         </Drawer.Navigator>
       </NavigationContainer>
     )

@@ -294,7 +294,7 @@ export default function BookSingle({ route, navigation }){
 
 	return (
 		<View style={styles.container}>
-			<ScrollView style={{bottom: 60}}>
+			<ScrollView style={{marginBottom: 60}}>
 				<ImageBackground
 					source={ebook.image ? {uri: ebook.image} : ''}
 					style={{backgroundColor: 'coral', opacity: 0.9}}>
@@ -390,7 +390,7 @@ export default function BookSingle({ route, navigation }){
 							<TouchableOpacity
 								onPress={() => navigation.navigate('BookByKey', {key: ebook.datePublish, by: 'datePublish'})}
 							>
-								<Text style={{...styles.textDescInfo, color: '#3498db'}}>{ebook.publish + ' ' + ebook.datePublish}</Text>
+								<Text style={{...styles.textDescInfo, color: '#3498db'}}>{ebook.publish ? ebook.publish : '' + ' ' + ebook.datePublish}</Text>
 							</TouchableOpacity>
 						</View>
 					</View>

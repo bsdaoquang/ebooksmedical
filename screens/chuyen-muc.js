@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import { Text, View, StyleSheet, Image, FlatList, ScrollView,TouchableOpacity, SafeAreaView, Alert, TextInput,
 		useWindowDimensions, StatusBar, ToastAndroid
 	} from 'react-native'
@@ -27,7 +27,7 @@ function NewBook({navigation}){
 
 	setTimeout(() => {
 		setLoad(true)
-	}, 3000)
+	}, 2000)
   	return(
   		<View style={styles.container}>
   			<StatusBar style='auto' />
@@ -72,7 +72,7 @@ function TopDownload({navigation}){
 
 	setTimeout(() => {
 		setLoad(true)
-	}, 3000)
+	}, 2000)
 
 	return(
 		<View style={styles.container}>
@@ -115,7 +115,7 @@ function Categories({navigation}){
 
 	setTimeout(() => {
 		setLoad(true)
-	}, 3000)
+	}, 2000)
 
 	return(
 		<View style={styles.container}>

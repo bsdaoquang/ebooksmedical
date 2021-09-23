@@ -8,6 +8,21 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 export default function CategoryScreen({navigation, route}) {
 	var {title, id} = route.params;
 
+	React.useLayoutEffect(() => {
+	    navigation.setOptions({
+	    	headerTitle: title,
+    		headerStyle:{
+    			backgroundColor: '#fafafa',
+    			shadowColor: 'transparent',
+		        shadowRadius: 0,
+		        shadowOffset: {
+		            height: 0,
+		        },
+		        elevation:0
+    		}
+	    });
+  	}, [navigation]);
+
 	const [iconname, setIconname] = useState('playlist-plus')
 
 	var category = {}
@@ -125,6 +140,7 @@ const styles = StyleSheet.create({
 
 	container:{
 		flex: 1,
+		backgroundColor: '#fafafa'
 	},
 
 	containerBook:{
