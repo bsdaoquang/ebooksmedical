@@ -36,7 +36,7 @@ import SearchScreen from './screens/search'
 import AboutScreen from './screens/about'
 import DonateScreen from './screens/about'
 
-console.disableYellowBox = true;
+//console.disableYellowBox = true;
 
 const Drawer = createDrawerNavigator();
 const Tab = createBottomTabNavigator()

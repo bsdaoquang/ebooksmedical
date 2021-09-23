@@ -90,6 +90,7 @@ export default function HomeScreen({navigation}){
 	const loadDataUser = async() => {
 		await firebaseApp.database().ref('Users').child(uid).on('value', snapuser => {
 			dataUser = snapuser.val()
+			dataUser.key = uid
 		})
 	}
 
@@ -110,7 +111,7 @@ export default function HomeScreen({navigation}){
 		download.push(
 			<View key={item.key} style={{flexDirection: 'row', justifyContents: 'center', marginVertical: 10}}>
 				<TouchableOpacity style={{flex: 1, flexDirection: 'row'}} 
-					onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title: item.title})}>
+					onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title: item.title, uid: uid})}>
 					<Image style={{width: 100, height: 150, borderRadius: 5}} source={{uri: item.image}} />
 	            	<View style={{flex: 1, paddingHorizontal: 10}}>
 	            		<Text style={{fontWeight: 'bold'}}>{item.title}</Text>
@@ -144,7 +145,7 @@ export default function HomeScreen({navigation}){
 		viewbook.push(
 			<View key={item.key} style={{flexDirection: 'row', justifyContents: 'center', marginVertical: 10}}>
 				<TouchableOpacity style={{flex: 1, flexDirection: 'row'}} 
-					onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
+					onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title, uid: uid})}>
 					<Image style={{width: 100, height: 150, borderRadius: 5}} source={{uri: item.image}} />
 	            	<View style={{flex: 1, paddingHorizontal: 10}}>
 	            		<Text style={{fontWeight: 'bold'}}>{item.title}</Text>
@@ -228,7 +229,7 @@ export default function HomeScreen({navigation}){
 						        		width: 60,
 						        		height: 60}}>
 						        		<View style={{flex: 1, alignItems: 'center'}}>
-						        			<Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>{(dataUser.medCoin / 1000).toFixed(0)}</Text>
+						        			<Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>{dataUser.medCoin}</Text>
 											<Text style={{color: 'white'}}>điểm</Text>	
 						        		</View>
 						        	</TouchableOpacity>
@@ -271,7 +272,7 @@ export default function HomeScreen({navigation}){
 				  			data={EBOOKS} 
 				  			renderItem={({ item }) => (
 				                <TouchableOpacity
-				                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
+				                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title, uid: uid})}>
 					            	<Image style={styles.bookImg} source={{uri: item.image}}/>
 				                </TouchableOpacity>
 					        )}

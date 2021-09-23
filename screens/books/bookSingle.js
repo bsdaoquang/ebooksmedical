@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import {
 	View, Text, Image, TouchableOpacity, StyleSheet,Button,
 	 ScrollView, ImageBackground, FlatList, useWindowDimensions,
@@ -6,16 +6,22 @@ import {
 }from 'react-native'
 
 import * as Linking from 'expo-linking';
-import { AntDesign, MaterialIcons, FontAwesome, Entypo, FontAwesome5 } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons, FontAwesome, Entypo, FontAwesome5, Fontisto } from '@expo/vector-icons';
 import {firebaseApp} from '../../firebaseConfig'
 import * as Localization from 'expo-localization';
 import {showAdInter} from '../../admobConfig'
 import {AdMobInterstitial} from 'expo-ads-admob';
+import * as WebBrowser from 'expo-web-browser';
+import { useScrollToTop } from '@react-navigation/native';
+
 
 var database = firebaseApp.database();
 
 export default function BookSingle({ route, navigation }){	
-	var {bookId, title } = route.params;
+	var {bookId, title, uid } = route.params;
+
+	const [id, setId] = useState(route.params.bookId)
+	const ref = React.useRef(null);
 
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
@@ -28,7 +34,7 @@ export default function BookSingle({ route, navigation }){
 	const [readLine, setReadLine] = useState(5)
 
 	var ebook = {}
-	firebaseApp.database().ref('Ebooks').child(bookId).on('value', (snapshot) => {
+	firebaseApp.database().ref('Ebooks').child(id).on('value', (snapshot) => {
 	  	ebook = snapshot.val()
 	  	ebook.key = snapshot.key
 
@@ -37,26 +43,75 @@ export default function BookSingle({ route, navigation }){
 	  	})
 	});
 
-	var categories = ''
+	var categories = ebook.category
+	var catTitle = []
 
-	ebook.category.forEach(item => {
+	categories.forEach(item => {
 		firebaseApp.database().ref('chuyenMuc').child(item).on('value', snap => {
-			categories += snap.val().title + ', '
+			catTitle.push(
+				<TouchableOpacity key={item}
+					onPress={() => navigation.navigate('Chuyên mục sách', {title: snap.val().title, id: item})}
+				>
+					<Text style={{...styles.textDescInfo, color: '#3498db', paddingHorizontal: 5}}>{snap.val().title}</Text>
+				</TouchableOpacity>
+			)
 		})
 	})
+
+	var catBook = categories[0]
+	var booksOfCat = []
+	var relatedBook = []
+	firebaseApp.database().ref('Ebooks').on('value', snap => {
+		snap.forEach(item => {
+			if (item.val().type === 'Ebook' && item.val().status === 'Đã tải lên') {
+				if (item.val().category.includes(catBook)) {
+					var items = {}
+
+					items = item.val()
+					items.key = item.key
+
+					booksOfCat.push(items)
+				}
+			}
+		})
+	})
+
+	if (booksOfCat.length > 0) {
+		var i = 0
+		booksOfCat.forEach(item => {
+
+			if (i <= 5) {
+				relatedBook.push(
+					<TouchableOpacity key={item.key}
+						style={{marginBottom: 10, marginLeft: i % 3 !== 0 ? 10 : 0}}
+		               	onPress = {() => changeBook(item.key)}>
+		            	<Image style={styles.bookRelatedImg} source={{uri: item.image}}/>
+		            </TouchableOpacity>
+				)
+			}
+
+			i++
+		})
+	}
+
+	useScrollToTop(ref);
+
+	function changeBook(keybook) {
+		setId(keybook)
+	}
 
 	var down = ebook.countDown
 	var view = ebook.countView
 	var countComments = 0
 	var countShare = ebook.countShare
 
-	firebaseApp.database().ref('Ebooks').child(bookId).child('comments').on('value', snap => {
+	firebaseApp.database().ref('Ebooks').child(id).child('comments').on('value', snap => {
 		snap.forEach(item => {
 			countComments += 1
 		})
 	})
 
-	firebaseApp.database().ref('Ebooks').child(bookId).update({
+	firebaseApp.database().ref('Ebooks').child(id).update({
 		countView: view + 1
 	})
 
@@ -68,7 +123,7 @@ export default function BookSingle({ route, navigation }){
 
 	const [loadAds, setLoadAds] = useState(false)
 
-	function downloadBook(bookURL, down){
+	function downloadBook(bookURL, down, view){
 		setLoadAds(true)
 
 		ToastAndroid.show('Đang tải quảng cáo', ToastAndroid.SHORT)
@@ -77,40 +132,50 @@ export default function BookSingle({ route, navigation }){
 		AdMobInterstitial.addEventListener('interstitialDidClose', () => {	
 			setLoadAds(false)
 
-			firebaseApp.database().ref('Ebooks').child(bookId).update({
-				countDown: down + 1
-			}).then(() => {
-				 Linking.openURL('https://drive.google.com/uc?export=download&id=' + bookURL)
-			})
+			if (view == 'view') {
+				WebBrowser.openBrowserAsync('https://drive.google.com/file/d/'+ bookURL +'/view');
+			}else{
+				firebaseApp.database().ref('Ebooks').child(id).update({
+					countDown: down + 1
+				}).then(() => {
+					 WebBrowser.openBrowserAsync('https://drive.google.com/uc?export=download&id=' + bookURL)
+				})
+			}
+
+			
 		})
 	}
 
 	function downloadVIP(bookURL, down){
 		//Kiêm tra xem có đăng nhập không
-		firebaseApp.auth().onAuthStateChanged((user) => {
-			if(user){
-				firebaseApp.database().ref('Users').child(user.uid).on('value', snap => {
-					var point = snap.val().medCoin
-					console.log(point)
-					if ((point * 1) > 0) {
-						firebaseApp.database().ref('Ebooks').child(bookId).update({
-							countDown: down + 1
-						}).then(() => {
-							 Linking.openURL('https://drive.google.com/uc?export=download&id=' + bookURL)
-						})
-					}else{
-						alert('Số điểm còn lại không đủ, xin vui lòng nạp thêm')
-					}
+		var point = 0
+		if(uid){
+			firebaseApp.database().ref('Users').child(uid).on('value', snap => {
+				point = snap.val().medCoin * 1
+			})
+
+			if ((point * 1) > 0) {
+				firebaseApp.database().ref('Ebooks').child(id).update({
+					countDown: down + 1
 				})
+
+				firebaseApp.database().ref('Users').child(uid).update({
+					medCoin: point - 1
+				})
+
+				WebBrowser.openBrowserAsync('https://drive.google.com/uc?export=download&id=' + bookURL)
 			}else{
-				alert('Bạn cần đăng nhập để thực hiện chức năng này')
+				alert('Số điểm còn lại không đủ, xin vui lòng nạp thêm')
 			}
-		})
+		}else{
+			alert('Bạn cần đăng nhập để thực hiện chức năng này')
+		}
+
 	}
 
 	const onShare = async (title, description) => {
 
-		firebaseApp.database().ref('Ebooks').child(bookId).update({
+		firebaseApp.database().ref('Ebooks').child(id).update({
 			countShare: countShare + 1
 		})
 
@@ -151,7 +216,7 @@ export default function BookSingle({ route, navigation }){
 		if (user) {
 			firebaseApp.database().ref('Users').child(user.uid).child('likes').once('value', snap => {
 				if (snap.val() !== null) {
-					if (snap.val().includes(bookId)) {
+					if (snap.val().includes(id)) {
 						setLike(true)
 					}else{
 						setLike(false)
@@ -164,7 +229,7 @@ export default function BookSingle({ route, navigation }){
 
 			firebaseApp.database().ref('Users').child(user.uid).child('dislike').once('value', snap => {
 				if (snap.val() !== null) {
-					if (snap.val().includes(bookId)) {
+					if (snap.val().includes(id)) {
 						setDislike(true)
 					}else{
 						setDislike(false)
@@ -177,8 +242,6 @@ export default function BookSingle({ route, navigation }){
 
 		}
 	})
-
-
 
 	function btnLike(key){
 		firebaseApp.auth().onAuthStateChanged((user) => {
@@ -235,66 +298,12 @@ export default function BookSingle({ route, navigation }){
 		})
 	}
 
-	// function btnDislike(key){
-	// 	firebaseApp.auth().onAuthStateChanged((user) => {
-	// 		if (user) {
-
-	// 			var dislikes
-
-	// 			firebaseApp.database().ref('Users').child(user.uid).once('value', snap => {
-
-	// 				if (snap.val().dislike !== '') {
-	// 					dislikes = snap.val().dislike
-	// 				}else{
-	// 					dislikes = []
-	// 				}
-
-	// 				//like thì phải bỏ dislike
-	// 				if (dislike === true) {
-	// 					//người dùng đã thích
-						
-	// 					//cộng đi 1 lần thích
-	// 					firebaseApp.database().ref('Ebooks').child(key).update({
-	// 						countDislike: ebook.countDislike - 1
-	// 					})
-
-	// 					setLike(false)
-	// 					// xóa khỏi database của người dùng
-	// 					var keyIndex = dislikes.indexOf(key)
-
-	// 					dislikes.splice(keyIndex, 1)
-
-	// 					firebaseApp.database().ref('Users').child(user.uid).update({
-	// 						dislike: dislikes
-	// 					})
-
-	// 				}else{
-			
-	// 					//cộng thêm 1 lần thích
-	// 					firebaseApp.database().ref('Ebooks').child(key).update({
-	// 						countDislike: ebook.countDislike + 1
-	// 					})
-
-	// 					setLike(true)
-
-	// 					// thêm vào database của người dùng
-	// 					dislikes.push(key)
-	// 					firebaseApp.database().ref('Users').child(user.uid).update({
-	// 						dislike: dislikes
-	// 					})
-	// 				}
-	// 			})
-	// 		}else{
-	// 			alert('Bạn cần phải đăng nhập trước')
-	// 		}
-	// 	})
-	// }
-
+	
 	var language = Localization.locale
 
 	return (
 		<View style={styles.container}>
-			<ScrollView style={{marginBottom: 60}}>
+			<ScrollView style={{marginBottom: 30}} ref={ref}>
 				<ImageBackground
 					source={ebook.image ? {uri: ebook.image} : ''}
 					style={{backgroundColor: 'coral', opacity: 0.9}}>
@@ -409,7 +418,9 @@ export default function BookSingle({ route, navigation }){
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
 							<Text style={styles.textTitleInfo}>Category: </Text>
-							<Text style={{...styles.textTitleInfo, flex: 1, fontWeight: 'normal'}}>{categories}</Text>
+							<View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+								{catTitle}
+							</View>
 						</View>
 					</View>
 
@@ -433,23 +444,32 @@ export default function BookSingle({ route, navigation }){
 				</View>
 				<View style={styles.reviewContainer}>
 					<Text style={{...styles.title, paddingVertical: 8}}>Products related to this item</Text>
+					<View style={{flexDirection: 'row', paddingVertical: 10, flexWrap: 'wrap',}}>
+						{relatedBook}
+					</View>
+					
 				</View>
 			</ScrollView>
 			<View style={styles.btnDownloadContainer}>
 				<TouchableOpacity style={{justifyContent: 'center', alignItems: 'center'}}
 					onPress={() => btnLike(ebook.key)}>
-					<MaterialIcons name={like === true ? 'bookmark' : 'bookmark-outline'} size={24} color={like === true ? '#3498db' : '#7f8b8b'}/>
+					<MaterialIcons name={like === true ? 'bookmark' : 'bookmark-outline'} size={26} color={like === true ? '#3498db' : '#7f8b8b'}/>
+				</TouchableOpacity>
+
+				<TouchableOpacity style={{justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5}}
+					onPress={() => downloadBook(ebook.downloadLink, ebook.countDown, 'view')}>
+					<Fontisto name="preview" size={24} color="#d35400" />
 				</TouchableOpacity>
 
 				<View style={{flexDirection: 'row', flex: 1}}>
 					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#d35400'}}
 						onPress={() => downloadVIP(ebook.downloadLink, ebook.countDown)}>
-						<Text style={{color: 'white'}}>Download Now</Text>
+						<Text style={{color: 'white'}}>Tải ngay</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#2980b9'}}
-						onPress={() => downloadBook(ebook.downloadLink, ebook.countDown)}>
-						<Text style={{color: 'white'}}>Watch Ads</Text>
+						onPress={() => downloadBook(ebook.downloadLink, ebook.countDown, 'down')}>
+						<Text style={{color: 'white'}}>Xem quảng cáo</Text>
 					</TouchableOpacity>
 				</View>
 				
@@ -538,7 +558,6 @@ const styles = StyleSheet.create({
 	reviewContainer:{
 		backgroundColor: '#fafafa',
 		padding: 10,
-		marginTop: 5
 	},
 	tetxReview:{
 		fontSize: 14,
@@ -556,7 +575,7 @@ const styles = StyleSheet.create({
 		borderTopWidth: 1,
 		borderColor: '#eeeeee',
 		flex: 1,
-		paddingVertical: 10,
+		paddingVertical: 8,
 		justifyContent: 'flex-start',
 	},
 
@@ -649,7 +668,8 @@ const styles = StyleSheet.create({
 		right: 0,
 		padding: 11,
 		flexDirection: 'row',
-		alignItems: 'center'
+		alignItems: 'center',
+		backgroundColor: '#fafafa'
 	},
 
 	btnDown:{
@@ -659,6 +679,13 @@ const styles = StyleSheet.create({
 		marginRight: 5,
 		borderRadius: 5,
 		paddingVertical: 8
+	},
+
+	bookRelatedImg:{
+		width: 100,
+		height: 150,
+		borderRadius: 5,
+		marginRight: 5,
 	}
 
 })
