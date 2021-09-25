@@ -27,7 +27,7 @@ import DrawerCustom from './screens/drawerCustom.js'
 // phần quản lý thành viên
 import LoginScreen from './screens/users/login'
 import SigninScreen from './screens/users/signin'
-import UserScreen from './screens/users/thanhvien'
+import ProfileScreen from './screens/users/userScreen'
 
 //phần tìm kiếm
 import SearchScreen from './screens/search'
@@ -35,6 +35,9 @@ import SearchScreen from './screens/search'
 //thông tin
 import AboutScreen from './screens/about'
 import DonateScreen from './screens/about'
+import MoreAppScreen from './screens/more-app'
+import PaymentsScreen from './screens/users/payments'
+import MyAlerts from './screens/my-alerts'
 
 //console.disableYellowBox = true;
 
@@ -53,9 +56,12 @@ function EbookStackScreen(){
           <StackEbooks.Screen name="Tìm kiếm" component={SearchScreen}/>
           <StackEbooks.Screen name="Thông tin" component={AboutScreen}/>
           <StackEbooks.Screen name="Ủng hộ" component={DonateScreen}/>
-          <StackEbooks.Screen name="Tài khoản" component={UserScreen}/>
+          <StackEbooks.Screen name="ProfileScreen" component={ProfileScreen}/>
           <StackEbooks.Screen name="Đăng nhập" component={LoginScreen}/>
           <StackEbooks.Screen name="Đăng ký" component={SigninScreen}/>
+          <StackEbooks.Screen name="Ứng dụng khác" component={MoreAppScreen}/>
+          <StackEbooks.Screen name="Nhận điểm" component={PaymentsScreen}/>
+          <StackEbooks.Screen name="Thông báo" component={MyAlerts}/>
         </StackEbooks.Navigator>
     )
 }

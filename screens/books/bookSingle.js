@@ -469,7 +469,7 @@ export default function BookSingle({ route, navigation }){
 
 					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#2980b9'}}
 						onPress={() => downloadBook(ebook.downloadLink, ebook.countDown, 'down')}>
-						<Text style={{color: 'white'}}>Xem quảng cáo</Text>
+						<Text style={{color: 'white'}}>Tải miễn phí</Text>
 					</TouchableOpacity>
 				</View>
 				

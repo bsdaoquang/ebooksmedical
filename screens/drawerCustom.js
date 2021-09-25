@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import {
-	View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, FlatList, Share, 
+	View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, FlatList, Share, ToastAndroid
 } from 'react-native'
 
 import {
@@ -14,7 +14,10 @@ import * as Localization from 'expo-localization';
 //import firebase
 import {firebaseApp} from '../firebaseConfig'
 
-import { MaterialIcons,FontAwesome, FontAwesome5, Ionicons, AntDesign, Octicons } from '@expo/vector-icons';
+import { 
+	MaterialIcons,FontAwesome, FontAwesome5, Ionicons, AntDesign, Octicons, EvilIcons, Entypo,
+	MaterialCommunityIcons
+} from '@expo/vector-icons';
 
 const onShare = async () => {
     const result = await Share.share({
@@ -26,14 +29,14 @@ const onShare = async () => {
 
 export default function DrawerCustom({navigation}){
 
-	const [user, setUser] = useState({})
+	const [uid, setUid] = useState()
 	const [login, setLogin] = useState(false)
 
 	var language = Localization.locale
 
 	firebaseApp.auth().onAuthStateChanged((user) => {
 		if (user) {
-			setUser(user)
+			setUid(user.uid)
 			setLogin(true)
 		}else{
 			setLogin(false)
@@ -49,19 +52,47 @@ export default function DrawerCustom({navigation}){
 		firebaseApp.auth().signOut()
 	}
 
+	var userData = {}
+
+	if (uid) {
+		firebaseApp.database().ref('Users').child(uid).on('value', snap => {
+			userData = snap.val()
+			userData.key = uid
+		})
+	}
+
+	//Kiểm tra thống báo chưa đọc
+	var countAlerts = 0
+	if (uid) {
+		firebaseApp.database().ref('Users').child(uid).child('alerts').on('value', snap => {
+			if (snap.val()) {
+				snap.forEach(item => {
+					countAlerts += 1
+				})
+			}
+		})
+	}
+	
+
+	function showToast(){
+		ToastAndroid.show('Đang phát triển', ToastAndroid.SHORT)
+	}
 	return(
 		<ScrollView style={styles.drawerContain}>
 			{
-				login === true ?
-				<View style={{flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#e0e0e0'}}>
+				uid ?
+				<View style={{flex: 1, padding: 20, borderBottomWidth: 1, borderBottomColor: '#e0e0e0'}}>
 					<Image 
-						source={{uri: user.photoURL !== '' ? user.photoURL : 'https://thuvien.yhocso.net/images/icons8-male-user-color-100.png'}}
-						style={{width: 100, height: 100, borderRadius: 50, marginVertical: 10}}
+						source={{uri: userData.photoURL !== '' ? userData.photoURL : 'https://thuvien.yhocso.net/images/icons8-male-user-color-100.png'}}
+						style={{width: 70, height: 70, borderRadius: 50, marginVertical: 10}}
 					/>
-					<View style={{marginVertical: 10, justifyContent: 'center', alignItems: 'center'}}>
-						<Text>Chào mừng bạn</Text>
-						<Text style={{color: '#34495e', fontWeight: 'bold', textTransform: 'uppercase'}}>{user.displayName}</Text>
-						<Text style={{fontStyle: 'italic'}}>{user.email}</Text>
+					<View style={{marginVertical: 10,}}>
+						<View style={{flexDirection: 'row'}}>
+							<MaterialCommunityIcons name="account-check" size={24} color={userData.xacMinh === true ? '#3498db' : '#95a5a6'}/>
+							<Text style={{color: '#34495e', fontWeight: 'bold', textTransform: 'uppercase', fontSize: 20, paddingHorizontal: 5}}>{userData.displayName}</Text>
+						</View>
+						
+						<Text style={{fontStyle: 'italic', color: 'coral'}}>{userData.medCoin} Điểm</Text>
 					</View>
 				</View>
 				:
@@ -83,14 +114,30 @@ export default function DrawerCustom({navigation}){
 				login === true ?
 				<View style={styles.copyRightContain}>
 					<View style={styles.infoContaint}>
-						<TouchableOpacity style={styles.button}>
-							<FontAwesome name="bell" size={24} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Thông báo</Text>
+
+						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ProfileScreen', {userData: userData})}>
+							<Ionicons name="person-circle" size={24} color="#34495e" style={styles.iconItems}/>
+							<Text style={styles.items}>Tài khoản</Text>
 						</TouchableOpacity>
 
-						<TouchableOpacity style={styles.button}>
-							<Ionicons name="person-circle" size={24} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Thông tin tài khoản</Text>
+						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Thông báo', {uid: uid})}>
+							<FontAwesome name="bell" size={24} color="#34495e" style={styles.iconItems}/>
+							<Text style={styles.items}>Thông báo {countAlerts > 0 ? <Text style={{color: 'red'}}>({countAlerts})</Text> : null}</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity style={styles.button} onPress={() => showToast()}>
+							<FontAwesome name="upload" size={24} color="#34495e" style={styles.iconItems}/>
+							<Text style={styles.items}>Upload</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity style={styles.button} onPress={() => showToast()}>
+							<FontAwesome name="book" size={24} color="#34495e" style={styles.iconItems}/>
+							<Text style={styles.items}>Sách của bạn</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Nhận điểm', {email: userData.email, uid: uid})}>
+							<FontAwesome5 name="funnel-dollar" size={20} color="#34495e" style={styles.iconItems}/>
+							<Text style={styles.items}>Nhận thêm điểm tải</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity style={styles.button}
@@ -103,8 +150,8 @@ export default function DrawerCustom({navigation}){
 						<TouchableOpacity style={styles.button}
 							onPress={() => logout()}
 						>
-							<AntDesign name="logout" size={24} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Đăng xuất</Text>
+							<AntDesign name="poweroff" size={20} color="red" style={{...styles.iconItems, color: 'red'}}/>
+							<Text style={{...styles.items, color: 'red'}}>Đăng xuất</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -124,7 +171,7 @@ export default function DrawerCustom({navigation}){
 					<TouchableOpacity style={styles.button}
 						onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc')}
 					>
-						<Octicons name="report" size={24} color="#34495e" style={styles.iconItems}/>
+						<FontAwesome5 name="facebook-messenger" size={20} color="#34495e" style={styles.iconItems} />
 						<Text style={styles.items}>Góp ý và Báo lỗi</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={styles.button}
@@ -137,13 +184,13 @@ export default function DrawerCustom({navigation}){
 						onPress={() => onShare()}
 					>
 						<MaterialIcons name="share" size={24} color="#34495e" style={styles.iconItems}/>
-						<Text style={styles.items}>Chia sẻ</Text>
+						<Text style={styles.items}>Gửi cho Bạn bè</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={styles.button}
-						onPress={() => navigation.navigate('Ủng hộ')}
+						onPress={() => navigation.navigate('Ứng dụng khác')}
 					>
-						<FontAwesome5 name="donate" size={24} color="#e67e22" style={styles.iconItems}/>
-						<Text style={{...styles.items, color: '#e67e22'}}>Ủng hộ</Text>
+						<Entypo name="grid" size={28} color="#34495e" style={styles.iconItems}/>
+						<Text style={{...styles.items}}>Ứng dụng khác</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -203,19 +250,19 @@ const styles = StyleSheet.create({
 	},
 
 	catTitle:{
-
 		color: '#34495e',
 	},
 
 	button:{
 		flexDirection: 'row',
-		paddingVertical: 8,
+		paddingVertical: 12,
 		alignItems: 'center'
 	},
 
 	iconItems:{
-
-		paddingHorizontal: 5
+		paddingLeft: 5,
+		paddingRight: 20,
+		color: '#34495e'
 	},
 
 	categoryContaint:{
