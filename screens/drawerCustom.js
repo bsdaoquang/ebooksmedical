@@ -67,7 +67,9 @@ export default function DrawerCustom({navigation}){
 		firebaseApp.database().ref('Users').child(uid).child('alerts').on('value', snap => {
 			if (snap.val()) {
 				snap.forEach(item => {
-					countAlerts += 1
+					if (item.val().read === false) {
+						countAlerts += 1
+					}
 				})
 			}
 		})

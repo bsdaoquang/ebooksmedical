@@ -141,14 +141,16 @@ export default function PaymentsScreen({navigation, route}){
 				uid: uid,
 				magiaodich: snap.key
 			})
-		}).then((snap) => {
+
 			//thông báo đến quản trị viên
 			firebaseApp.database().ref('Users').child('wbquswyP16TPO4xEBAu36P1d5P13').child('alerts').push({
 				title: 'Giao dịch mới',
 				time: new Date().getTime(),
 				from: 'system',
+				uid: uid,
 				content: 'Giao dịch nạp tiền mới từ ' + email,
-				read: false
+				read: false,
+				magiaodich: snap.key
 			})
 
 			//lưu vào thông báo thanh toán
