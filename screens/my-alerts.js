@@ -116,7 +116,7 @@ export default function MyAlerts({navigation, route}){
 				title: 'Giao dịch hoàn thành',
 				time: new Date().getTime(),
 				from: 'system',
-				content: 'Giao dịch mua '+ sotien +' của bạn đã được hoàn thành, cám ơn bạn đã sử dụng dịch vụ. Thân',
+				content: 'Giao dịch mua '+ sotien +' điểm tải của bạn đã được hoàn thành, cám ơn bạn đã sử dụng dịch vụ. Thân',
 				read: false
 			})
 

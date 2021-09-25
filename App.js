@@ -38,6 +38,7 @@ import DonateScreen from './screens/about'
 import MoreAppScreen from './screens/more-app'
 import PaymentsScreen from './screens/users/payments'
 import MyAlerts from './screens/my-alerts'
+import MyBooksScreen from './screens/books/my-books'
 
 //console.disableYellowBox = true;
 
@@ -62,6 +63,7 @@ function EbookStackScreen(){
           <StackEbooks.Screen name="Ứng dụng khác" component={MoreAppScreen}/>
           <StackEbooks.Screen name="Nhận điểm" component={PaymentsScreen}/>
           <StackEbooks.Screen name="Thông báo" component={MyAlerts}/>
+          <StackEbooks.Screen name="Sách tải lên" component={MyBooksScreen}/>
         </StackEbooks.Navigator>
     )
 }

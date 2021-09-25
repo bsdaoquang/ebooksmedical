@@ -216,12 +216,14 @@ export default function HomeScreen({navigation}){
 			        {
 			        	dataUser ? 
 				        	dataUser.displayName !== undefined ?
-				        		<View style={{flexDirection: 'row', backgroundColor: '#ecf0f1', padding: 10, borderRadius: 10, margin: 10}}>
+				        		<TouchableOpacity
+				        			onPress={() => navigation.navigate('ProfileScreen', {userData: dataUser})}
+				        			style={{flexDirection: 'row', backgroundColor: '#ecf0f1', padding: 10, borderRadius: 10, margin: 10}}>
 				        			<View style={{flex: 1}}>
 							        	<Text style={{...styles.title, fontWeight: 'normal'}}>Chào mừng bạn!</Text>
 							        	<Text style={{fontWeight: 'bold', fontSize: 24}}>{dataUser.displayName}</Text>
 						        	</View>
-						        	<TouchableOpacity style={{
+						        	<View style={{
 						        		borderRadius: 50, 
 						        		backgroundColor: 'coral', 
 						        		justifyContents: 'center',
@@ -232,8 +234,8 @@ export default function HomeScreen({navigation}){
 						        			<Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>{dataUser.medCoin}</Text>
 											<Text style={{color: 'white'}}>điểm</Text>	
 						        		</View>
-						        	</TouchableOpacity>
-				        		</View>
+						        	</View>
+				        		</TouchableOpacity>
 								
 				        	: null
 				        : null

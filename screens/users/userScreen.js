@@ -40,6 +40,21 @@ export default function ProfileScreen({navigation, route}){
   		})
   	})
 
+  	function reVerifyEmail() {
+  		firebaseApp.auth().onAuthStateChanged((user) => {
+  			if (user) {
+  				user.sendEmailVerification().then(() => {
+  					alert('Chúng tôi đã gửi email xác minh tài khoản cho bạn, vui lòng kiểm tra và làm theo hướng dẫn.')
+  					navigation.navigate('Trang chủ')
+  				})
+  			}
+  		})
+  	}	
+
+  	function logout(){
+		firebaseApp.auth().signOut().then(() => navigation.navigate('Trang chủ'))
+	}
+
 	return(
 		<View style={styles.container}>
 			<View style={styles.infoContainer}>
@@ -51,7 +66,7 @@ export default function ProfileScreen({navigation, route}){
 
 					<View style={{flex: 1, justifyContent: 'center'}}>
 						<Text style={{...styles.title, fontWeight: 'bold', fontSize: 24}}>{userData.displayName}</Text>
-						<Text style={styles.desc}>Bác sĩ</Text>
+						<Text style={styles.desc}>{userData.follower ? userData.follower : 0} followers</Text>
 					</View>
 				</View>
 
@@ -70,39 +85,47 @@ export default function ProfileScreen({navigation, route}){
 			</View>
 
 			<View style={{...styles.infoContainer, flexDirection: 'row', justifyContent: 'space-around'}}>
-				<View style={{alignItems: 'center'}}>
+				<TouchableOpacity 
+					onPress={() => navigation.navigate('Nhận điểm', {email: userData.email, uid: userData.key})}
+					style={{alignItems: 'center'}}>
 					<Text style={{...styles.title, fontWeight: 'bold', fontSize: 24}}>{userData.medCoin}</Text>
 					<Text style={styles.desc}>Điểm</Text>
-				</View>
+				</TouchableOpacity>
 
-				<View style={{alignItems: 'center'}}>
+				<TouchableOpacity
+					onPress={() => navigation.navigate('Sách tải lên', {uid: userData.key})}
+					style={{alignItems: 'center'}}>
 					<Text style={{...styles.title, fontWeight: 'bold', fontSize: 24}}>{countBook}</Text>
 					<Text style={styles.desc}>Ebooks</Text>
-				</View>
+				</TouchableOpacity>
 			</View>
 
 			<View style={{...styles.infoContainer}}>
-				<TouchableOpacity style={styles.buttonContainer}>
-					<Ionicons name="bookmark" size={24} style={styles.iconButton}/>
-					<Text style={styles.title}>Sách yêu thích</Text>
-				</TouchableOpacity>
+				{
+					userData.mota !== '' ? 
+						<Text style={{...styles.desc, color: '#414141'}}>{userData.mota}</Text>
+					: null
+				}
+				
+				<Text style={{...styles.desc, color: '#414141'}}>Trạng thái: {userData.xacMinh === false ? 'Chưa được xác minh' : 'Đã xác minh'}</Text>
 
-				<TouchableOpacity style={styles.buttonContainer}>
-					<AntDesign name="wallet" size={24} style={styles.iconButton}/>
-					<Text style={styles.title}>Thanh toán</Text>
-				</TouchableOpacity>
+				{
+					userData.xacMinh === false ?
 
-				<TouchableOpacity style={styles.buttonContainer}>
-					<Ionicons name="bookmark" size={24} style={styles.iconButton}/>
-					<Text style={styles.title}>Sách yêu thích</Text>
-				</TouchableOpacity>
+					<TouchableOpacity 
+						onPress={() => reVerifyEmail()}>
+						<Text style={{...styles.desc, color: '#3498db'}}>Gửi lại email xác minh</Text>
+					</TouchableOpacity>
+
+					: null
+				}
 			</View>
 
 			<View style={{...styles.infoContainer, borderBottomWidth: 0}}>
-				<View style={styles.iconContainer}>
+				<TouchableOpacity style={styles.iconContainer} onPress={() => logout()}>
 					<Ionicons name="power-outline" size={24} style={{...styles.icon, color: 'red'}} />
 					<Text style={{color: 'red'}}>Đăng xuất</Text>
-				</View>
+				</TouchableOpacity>
 			</View>
 
 		</View>
@@ -127,7 +150,7 @@ const styles = StyleSheet.create({
 	},
 
 	title:{
-		color: '#34495e'
+		color: '#34495e',
 	},
 
 	desc:{

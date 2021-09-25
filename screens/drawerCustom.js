@@ -82,7 +82,7 @@ export default function DrawerCustom({navigation}){
 	return(
 		<ScrollView style={styles.drawerContain}>
 			{
-				uid ?
+				login === true ?
 				<View style={{flex: 1, padding: 20, borderBottomWidth: 1, borderBottomColor: '#e0e0e0'}}>
 					<Image 
 						source={{uri: userData.photoURL !== '' ? userData.photoURL : 'https://thuvien.yhocso.net/images/icons8-male-user-color-100.png'}}
@@ -132,7 +132,7 @@ export default function DrawerCustom({navigation}){
 							<Text style={styles.items}>Upload</Text>
 						</TouchableOpacity>
 
-						<TouchableOpacity style={styles.button} onPress={() => showToast()}>
+						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Sách tải lên', {uid: userData.key})}>
 							<FontAwesome name="book" size={24} color="#34495e" style={styles.iconItems}/>
 							<Text style={styles.items}>Sách của bạn</Text>
 						</TouchableOpacity>
@@ -188,6 +188,14 @@ export default function DrawerCustom({navigation}){
 						<MaterialIcons name="share" size={24} color="#34495e" style={styles.iconItems}/>
 						<Text style={styles.items}>Gửi cho Bạn bè</Text>
 					</TouchableOpacity>
+
+					<TouchableOpacity style={styles.button}
+						onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc')}
+					>
+						<FontAwesome name="star" size={24} color="#34495e" style={styles.iconItems}/>
+						<Text style={styles.items}>Đánh giá ứng dụng</Text>
+					</TouchableOpacity>
+
 					<TouchableOpacity style={styles.button}
 						onPress={() => navigation.navigate('Ứng dụng khác')}
 					>
