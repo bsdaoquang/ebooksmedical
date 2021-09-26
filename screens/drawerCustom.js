@@ -1,7 +1,9 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect, useRef } from 'react'
 import {
 	View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, FlatList, Share, ToastAndroid
 } from 'react-native'
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 
 import {
 	DrawerContentScrollView,
@@ -27,12 +29,18 @@ const onShare = async () => {
     });
 }
 
+Notifications.setNotificationHandler({
+	handleNotification: async () => ({
+		shouldShowAlert: true,
+		shouldPlaySound: false,
+		shouldSetBadge: false,
+	}),
+});
+
 export default function DrawerCustom({navigation}){
 
 	const [uid, setUid] = useState()
 	const [login, setLogin] = useState(false)
-
-	var language = Localization.locale
 
 	firebaseApp.auth().onAuthStateChanged((user) => {
 		if (user) {
@@ -75,7 +83,6 @@ export default function DrawerCustom({navigation}){
 		})
 	}
 	
-
 	function showToast(){
 		ToastAndroid.show('Đang phát triển', ToastAndroid.SHORT)
 	}

@@ -14,7 +14,7 @@ function NewBook({navigation}){
 	const getNewBook = async() => {
 		await firebaseApp.database().ref('Ebooks').orderByChild('dateUpdate').limitToLast(100).on('value', (snapshot) => {
 			snapshot.forEach(item => {
-				if (item.val().status !== 'Bản nháp') {
+				if (item.val().status !== 'Bản nháp' && item.val().type === 'Ebook') {
 					var ebook = {}
 			  		ebook = item.val()
 			  		ebook.key = item.key
@@ -60,10 +60,12 @@ function TopDownload({navigation}){
 
 		await firebaseApp.database().ref('Ebooks').orderByChild('countDown').limitToLast(100).on('value', (snapshot) => {
 			snapshot.forEach(item => {
-		  		var ebook = {}
-		  		ebook = item.val()
-		  		ebook.key = item.key
-		  		TOPDOWNLOAD.unshift(ebook)
+				if (item.val().status !== 'Bản nháp' && item.val().type === 'Ebook') {
+			  		var ebook = {}
+			  		ebook = item.val()
+			  		ebook.key = item.key
+			  		TOPDOWNLOAD.unshift(ebook)
+		  		}
 		  	})
 		})
 	}
@@ -135,6 +137,7 @@ function Categories({navigation}){
 }
 
 const Tab = createMaterialTopTabNavigator();
+
 export default function ChuyenMuc({navigation, route}){
 
 	const {title, name} = route.params

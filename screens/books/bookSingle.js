@@ -311,7 +311,7 @@ export default function BookSingle({ route, navigation }){
 					<View style={styles.headerContainer}>
 						<Image 
 							source={ebook.image ? {uri: ebook.image} : ''}
-							style={styles.imgHeader}
+							style={ebook.type === 'Ebook' ? styles.imgHeader : styles.imgSliderHeader}
 						/>
 						{/*<View style={{flexDirection: 'row', marginTop: 15, justifyContent: 'center'}}>
 							<TouchableOpacity 
@@ -500,6 +500,12 @@ const styles = StyleSheet.create({
 		width: 180,
 		height: 260,
 		borderRadius: 5,
+	},
+
+	imgSliderHeader:{
+		width: 200,
+		height: 150,
+		borderRadius: 5
 	},
 
 	titleHeader:{

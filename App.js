@@ -6,13 +6,15 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator  } from '@react-navigation/stack'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { AntDesign } from '@expo/vector-icons'
+import { FontAwesome5 } from '@expo/vector-icons'
 import { firebaseApp } from './firebaseConfig'
 import * as Localization from 'expo-localization'
 
 import HomeScreen from './screens/home'
-//import SlidersScreen from './screens/sliders'
-//import VideosScreen from './screens/videos'
+import SlidersScreen from './screens/sliders'
+import VideosScreen from './screens/videos'
+import UploadScreen from './screens/upload'
+import ShopScreen from './screens/shop'
 
 import BookSingle from './screens/books/bookSingle'
 import CategoryScreen from './screens/books/category'
@@ -39,6 +41,9 @@ import MoreAppScreen from './screens/more-app'
 import PaymentsScreen from './screens/users/payments'
 import MyAlerts from './screens/my-alerts'
 import MyBooksScreen from './screens/books/my-books'
+
+//import NotificationScreen from './screens/notification'
+
 
 //console.disableYellowBox = true;
 
@@ -68,44 +73,50 @@ function EbookStackScreen(){
     )
 }
 
-// function TabNavigator({navigation}) {
-//   return (
-//         <Tab.Navigator 
-//             screenOptions={({ route }) => ({
-//               tabBarIcon: ({ focused, color, size }) => {
-//                 let iconName;
+function TabNavigator({navigation}) {
+  return (
+        <Tab.Navigator 
+            screenOptions={({ route }) => ({
+              tabBarIcon: ({ focused, color, size }) => {
+                let iconName;
 
-//                 if (route.name === 'Ebooks') {
-//                   iconName = focused ? 'bars': 'bars';
-//                 }else if (route.name === 'Drawer') {
-//                   iconName = focused ? 'bars' : 'bars';
-//                 }else if (route.name === 'Search') {
-//                   iconName = focused ? 'search1' : 'search1';
-//                 }
-//                 return <AntDesign name={iconName} size={size} color={color} />;
-//               },
-//             })}
-//             tabBarOptions={{
-//               activeTintColor: '#34495e',
-//               inactiveTintColor: 'gray',
-//               showLabel: false,
-//               style:{
-//                 backgroundColor: 'white',
-//               }
-//             }}
-//             >
-//             <Tab.Screen name='Drawer' onPress={() => console.log('show')}/> 
-//             <Tab.Screen name='Ebooks' component={EbookStackScreen}/>
-//             <Tab.Screen name='Search' component={SearchScreen}/>
-//         </Tab.Navigator>
-//   );
-// }
+                if (route.name === 'Ebooks') {
+                  iconName = focused ? 'book-open': 'book-medical';
+                }else if (route.name === 'Upload') {
+                  iconName = focused ? 'upload' : 'upload';
+                }else if (route.name === 'SlidersScreen') {
+                  iconName = focused ? 'file-powerpoint' : 'file-powerpoint';
+                }else if (route.name === 'Video') {
+                  iconName = focused ? 'photo-video' : 'photo-video';
+                }else if (route.name === 'Shop') {
+                  iconName = focused ? 'shopping-cart' : 'shopping-cart';
+                }
+                return <FontAwesome5 name={iconName} size={20} color={color}/>;
+              },
+            })}
+            tabBarOptions={{
+              activeTintColor: 'red',
+              inactiveTintColor: 'gray',
+              showLabel: false,
+              style:{
+                backgroundColor: 'white',
+              }
+            }}
+            >
+            <Tab.Screen name='Ebooks' component={EbookStackScreen}/>
+            <Tab.Screen name='SlidersScreen' component={SlidersScreen}/>
+            <Tab.Screen name='Video' component={VideosScreen}/>
+            <Tab.Screen name='Upload' component={UploadScreen}/>
+            <Tab.Screen name='Shop' component={ShopScreen}/>
+        </Tab.Navigator>
+  );
+}
 
 export default function App(){
   return(
      <NavigationContainer>
         <Drawer.Navigator drawerContent = {(props) => <DrawerCustom {...props} />}>
-          <Drawer.Screen name='HomeScreen' component={EbookStackScreen}/>
+          <Drawer.Screen name='HomeScreen' component={TabNavigator}/>
         </Drawer.Navigator>
       </NavigationContainer>
     )

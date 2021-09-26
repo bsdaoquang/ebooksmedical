@@ -9,6 +9,8 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import * as Linking from 'expo-linking';
 import NetInfo from '@react-native-community/netinfo';
 
+//import NotificationScreen from './notification'
+
 export default function HomeScreen({navigation}){
 	const [net, setNet] = useState(true)
 
@@ -18,7 +20,7 @@ export default function HomeScreen({navigation}){
 	var TOPVIEW = []
 
 	const getNewBook = async() => {
-		await firebaseApp.database().ref('Ebooks').orderByChild('dateUpdate').limitToLast(10).on('value', (snapshot) => {
+		await firebaseApp.database().ref('Ebooks').orderByChild('type').equalTo('Ebook').limitToLast(10).on('value', (snapshot) => {
 			snapshot.forEach(item => {
 				if (item.val().status !== 'Bản nháp' && item.val().type === 'Ebook') {
 					var ebook = {}
@@ -258,6 +260,10 @@ export default function HomeScreen({navigation}){
 				        	onPress={() => navigation.navigate('Tìm kiếm')}>
 				        	<Text style={{...styles.seemore, flex: 1}}>Bạn muốn tìm gì hôm nay?</Text>
 				        	<AntDesign name="search1" size={20} color="#34495e" />
+				        </TouchableOpacity>
+
+				        <TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => navigation.navigate('Upload')}>
+				        	<AntDesign name="upload" size={24} color="#34495e" />
 				        </TouchableOpacity>	
 			        </View>
 			        
@@ -289,7 +295,6 @@ export default function HomeScreen({navigation}){
 			        		<Text style={styles.seemore}>see more</Text>
 			        	</TouchableOpacity>
 			        </View>
-
 			        <View style={styles.bookContainerHorizontal}>
 			        	<FlatList
 				  			data={CATs} 
@@ -399,6 +404,21 @@ const styles = StyleSheet.create({
 		borderWidth: 0,
 		borderRadius: 5,
 		marginRight: 15,
+		shadowColor: "#000",
+		shadowOffset: {
+			width: 0,
+			height: 16,
+		},
+		shadowOpacity: 0.58,
+		shadowRadius: 16,
+	},
+
+	sliderImg:{
+		width: 150,
+		height: 100,
+		marginBottom: 8,
+		borderWidth: 0,
+		borderRadius: 5,
 		shadowColor: "#000",
 		shadowOffset: {
 			width: 0,

@@ -6,7 +6,8 @@ import {firebaseApp} from '../../firebaseConfig'
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
 export default function CategoryScreen({navigation, route}) {
-	var {title, id} = route.params;
+
+	var {title, id, fill} = route.params;
 
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
@@ -48,7 +49,7 @@ export default function CategoryScreen({navigation, route}) {
 
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
-	    	headerTitle: title,
+	    	headerTitle: (fill ? fill : '' )+ ' ' + title,
 	    	headerRight: () => (
 	    		<View>
 	    			<TouchableOpacity style={{paddingHorizontal: 15}} onPress={() => addPivared()}>
@@ -95,16 +96,29 @@ export default function CategoryScreen({navigation, route}) {
 
   	var EBOOKS = []
 	const getNewBook = async() => {
-		await firebaseApp.database().ref('Ebooks').orderByChild('title').on('value', (snapshot) => {
-			snapshot.forEach(item => {
-				if (item.val().category.includes(id)) {
-					var ebook = {}
-			  		ebook = item.val()
-			  		ebook.key = item.key
-			  		EBOOKS.unshift(ebook)
-				}
-		  	})
-		})
+		if (fill) {
+			await firebaseApp.database().ref('Ebooks').orderByChild('type').equalTo(fill).on('value', (snapshot) => {
+				snapshot.forEach(item => {
+					if (item.val().category.includes(id)) {
+						var ebook = {}
+				  		ebook = item.val()
+				  		ebook.key = item.key
+				  		EBOOKS.unshift(ebook)
+					}
+			  	})
+			})
+		}else{
+			await firebaseApp.database().ref('Ebooks').orderByChild('title').on('value', (snapshot) => {
+				snapshot.forEach(item => {
+					if (item.val().category.includes(id)) {
+						var ebook = {}
+				  		ebook = item.val()
+				  		ebook.key = item.key
+				  		EBOOKS.unshift(ebook)
+					}
+			  	})
+			})
+		}
 	}
 	getNewBook()
 
@@ -116,22 +130,50 @@ export default function CategoryScreen({navigation, route}) {
 	return(
 		<View style={styles.container}>
   			<StatusBar style='auto' />
-    		<FlatList style={styles.containerBook}
-	  			data={EBOOKS} 
-	  			renderItem={({ item }) => (
-		            <View style={styles.bookContain}>
-		                <TouchableOpacity
-		                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
-			            	<Image style={styles.bookImg} source={{uri: item.image}}/>
-			              	<Text numberOfLines={1} style={styles.bookTitle}>{item.title}</Text>
-			              	<Text numberOfLines={1} style={styles.bookAuthor}>{item.author}</Text>
-		                </TouchableOpacity>
-		            </View>
-		        )}
-	  			//inverted={true}
-				numColumns={3}
-	  	 		keyExtractor={item => item.key}
-  	 		/>		
+  			{
+  				EBOOKS.length > 0 ?
+
+  				<FlatList style={styles.containerBook}
+	  				data={EBOOKS} 
+	  				renderItem={({ item }) => (
+	  					<View>
+	  					{
+	  						fill ? 
+	  						<TouchableOpacity
+	  						style={{padding: 8}}
+	  						onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
+	  						<Image style={styles.sliderImg} source={{uri: item.image}}/>
+	  						</TouchableOpacity>
+	  						: 
+
+	  						<View style={styles.bookContain}>
+	  						<TouchableOpacity
+	  						onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
+	  						<Image style={styles.bookImg} source={{uri: item.image}}/>
+	  						<Text numberOfLines={1} style={styles.bookTitle}>{item.title}</Text>
+	  						<Text numberOfLines={1} style={styles.bookAuthor}>{item.author}</Text>
+	  						</TouchableOpacity>
+	  						</View>
+	  					}
+	  					</View>
+	  					)}
+		  			//inverted={true}
+		  			numColumns={fill ? 2 : 3}
+		  			keyExtractor={item => item.key}
+	  			/>
+  				:
+
+  				<View style={{justifyContent: 'center', alignItems: 'center', padding: 20}}>
+  					<Text>Chưa có tài liệu nào trong mục này. Bạn có tài liệu, hãy chia sẻ đến mọi người và nhận điểm cho mỗi lượt tải về</Text>
+  					<TouchableOpacity 
+  					onPress={() => navigation.navigate('Upload')}
+  					style={{marginVertical: 20, backgroundColor: '#1abc9c', padding: 8, alignItems: 'center', width: '50%'}}>
+  						<Text style={{color: 'white'}}>Tải lên tài liệu của bạn</Text>
+  					</TouchableOpacity>
+  				</View>
+
+			}
+    				
 		</View>
 	)
 }
@@ -163,8 +205,14 @@ const styles = StyleSheet.create({
 		borderRadius: 5,
 	},
 
-	bookTitle:{
+	sliderImg:{
+		width: 150,
+		height: 100,
+		marginRight: 10,
+		borderRadius: 10
+	},
 
+	bookTitle:{
 		fontWeight: '200',
 	},
 

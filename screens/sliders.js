@@ -1,312 +1,309 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import { Text, View, StyleSheet, Image, FlatList, ScrollView,TouchableOpacity, SafeAreaView, Alert, TextInput,
-		useWindowDimensions, StatusBar, ToastAndroid, Share
+		useWindowDimensions, StatusBar, ToastAndroid
 	} from 'react-native'
-import { AntDesign, Entypo, Feather, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, Feather, Ionicons } from '@expo/vector-icons';
 import {firebaseApp} from '../firebaseConfig'
+import * as StoreReview from 'expo-store-review'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import {styles} from '../styles'
 import * as Linking from 'expo-linking';
-import AdMob, {showAdInter} from '../admobConfig'
-import {AdMobInterstitial} from 'expo-ads-admob';
+import NetInfo from '@react-native-community/netinfo';
 
-function NewSlider({navigation}){
+export default function SliderScreen({navigation}){
+	const [net, setNet] = useState(true)
 
-	const [uid, setUid] = useState()
-	firebaseApp.auth().onAuthStateChanged((user) => {
-		if (user) {
-			setUid(user.uid)
-		}
-	})
+	var SLIDERS = []
+	var CATs = []
+	var TOPDOWNLOAD = []
 
-	const [load, setLoad] = useState(false)
-
-	var SLIDER = []
-	const getSliders = async() => {
-		await firebaseApp.database().ref('Sliders').on('value', (snapshot) => {
+	const getNewBook = async() => {
+		await firebaseApp.database().ref('Ebooks').orderByChild('type').equalTo('Slider').limitToLast(10).on('value', (snapshot) => {
 			snapshot.forEach(item => {
-				var slider = {}
-		  		slider = item.val()
-		  		slider.key = item.key
-
-		  		if (uid) {
-		  			firebaseApp.database().ref('Users').child(uid).on('value', snap => {
-		  				if (snap.val().sliderslike !== undefined) {
-		  					if (snap.val().sliderslike.includes(item.key)) {
-		  						slider.like = true
-		  					}else{
-		  						slider.like = false
-		  					}
-		  				}else{
-		  					slider.like = false
-		  				}
-		  			})
-		  		}else{
-		  			slider.like = false
-		  		}
-
-		  		SLIDER.push(slider)
+				if (item.val().type === 'Slider') {
+					var sliders = {}
+			  		sliders = item.val()
+			  		sliders.key = item.key
+			  		SLIDERS.unshift(sliders)
+				}
 		  	})
+		})
+	}
+	getNewBook()
 
-
+	const getCats = async () => {
+		await firebaseApp.database().ref('chuyenMuc').limitToFirst(10).on('value', snapcat => {
+			snapcat.forEach(itemcat => {
+				var cat = {}
+				cat = itemcat.val()
+		  		cat.key = itemcat.key
+		  		CATs.push(cat)		
+		  	})
 		})
 	}
 
-	getSliders()
+	getCats()
 
-	setTimeout (() => {
-		setLoad(true)
-	}, 3000)
+	const getTopDown = async () => {
+		await firebaseApp.database().ref('Ebooks').orderByChild('type').equalTo('Slider').on('value', snap => {
+			var i = 0
+			snap.forEach(item => {
+				if (item.val().type === 'Slider') {
+					if (i < 12) {
+						var ebook = {}
+				  		ebook = item.val()
+				  		ebook.key = item.key
 
-	function likesliderset(key, like, countLike){
-		setlikeslider(key, uid, like, countLike)
-
-		setLoad(!load)
+				  		TOPDOWNLOAD.push(ebook)
+					}
+				}
+				i++
+		  		
+		  	})
+		})
 	}
 
-  	return(
-  		<View style={styles.container}>
-  			<StatusBar style='auto' />
-  			<FlatList
-	  			data={SLIDER} 
-	  			renderItem={({ item }) => (
-		            <View style={styles.itemContainer}>
-		                <TouchableOpacity onPress={() => navigation.navigate('SliderSinger', {key: item.key, uid: uid})}>
-			            	<Image style={styles.itemImage} source={{uri: item.imglink}}/>
-		                </TouchableOpacity>
-		                <View style={styles.buttonContainer}>
-		                	<TouchableOpacity onPress={() => likesliderset(item.key, item.like, item.countLike)}>
-		                		<Text style={styles.countText}><AntDesign name={item.like === true ? 'heart' : 'hearto'} size={18} color="white" /> {item.countLike}</Text>
-		                	</TouchableOpacity>
-		                	<TouchableOpacity onPress={() => navigation.navigate('SliderSinger', {key: item.key, uid: uid})}>
-		                		<Text style={styles.countText}><AntDesign name="eye" size={20} color="white" /> {item.countView}</Text>
-		                	</TouchableOpacity>
-		                	<TouchableOpacity onPress={() => onShare(item.key, item.countShare)}>
-		                		<Text style={styles.countText}><AntDesign name="sharealt" size={20} color="white" /> {item.countShare}</Text>
-		                	</TouchableOpacity>
-		                	
-		                </View>
-		            </View>
-		        )}
-	  	 		keyExtractor={item => item.key}
-  	 		/>
-		</View>
-	);
-}
+	getTopDown()
 
-function Viewed({navigation}){
-    const [load, setLoad] = useState(false)
-
+	const [load, setLoad] = useState(false)
 	const [uid, setUid] = useState()
+
 	firebaseApp.auth().onAuthStateChanged((user) => {
 		if (user) {
 			setUid(user.uid)
 		}
 	})
 
-	var slidersviewed = []
-
-	const getViewed = async() => {
-		await firebaseApp.database().ref('Users').child(uid).on('value', snap => {
-			var viewed = snap.val().slidersviewed
-			
-			if (viewed !== undefined) {
-				viewed.forEach(item => {
-					firebaseApp.database().ref('Sliders').child(item).once('value', snapitem => {
-						var slider = {}
-
-						slider = snapitem.val()
-						slider.key = item
-
-						slidersviewed.push(slider)
-					})
-				})
-			}
+	var dataUser = {}	
+	const loadDataUser = async() => {
+		await firebaseApp.database().ref('Users').child(uid).on('value', snapuser => {
+			dataUser = snapuser.val()
+			dataUser.key = uid
 		})
 	}
 
-	if (uid) {
-		getViewed()
-	}
-	
-	setTimeout (() => {
-		setLoad(true)
-	}, 3000)
-
-	return(
-		<View style={styles.container}>
-  			<StatusBar style='auto' />
-			<FlatList
-  			data={slidersviewed} 
-  			renderItem={({ item }) => (
-	            <View style={styles.itemContainer}>
-	                <TouchableOpacity onPress={() => navigation.navigate('SliderSinger', {key: item.key, uid: uid})}>
-		            	<Image style={styles.itemImage} source={{uri: item.imglink}}/>
-	                </TouchableOpacity>
-	                <View style={styles.buttonContainer}>
-	                	<TouchableOpacity onPress={() => likesliderset(item.key, item.like, item.countLike)}>
-	                		<Text style={styles.countText}><AntDesign name={item.like === true ? 'heart' : 'hearto'} size={18} color="white" /> {item.countLike}</Text>
-	                	</TouchableOpacity>
-	                	<TouchableOpacity onPress={() => navigation.navigate('SliderSinger', {key: item.key, uid: uid})}>
-	                		<Text style={styles.countText}><AntDesign name="eye" size={20} color="white" /> {item.countView}</Text>
-	                	</TouchableOpacity>
-	                	<TouchableOpacity onPress={() => onShare(item.key, item.countShare)}>
-	                		<Text style={styles.countText}><AntDesign name="sharealt" size={20} color="white" /> {item.countShare}</Text>
-	                	</TouchableOpacity>
-	                </View>
-	            </View>
-	        )}
-  	 		keyExtractor={item => item.key}
- 			/>
-		</View>
-	)
-}
-
-function Categories({navigation}){
-	const [load, setLoad] = useState(false)
-
-	//hiển thị những chuyên mục có slider
-	//vậy cứ hiển thị các chuyên mục ra xem đã
-
-	var catSlider = []
-	var cats = []
-	const getCatslider = async() => {
-		await firebaseApp.database().ref('Sliders').on('value', snap => {
-			snap.forEach(item => {
-				//kiểm tra từng phần tử trong mảng item có trong catslider chưa
-				//nếu chưa có thì push vào, có rồi thì bỏ qua
-
-				item.val().categories.forEach(itemcat => {
-					if (cats.includes(itemcat)) {
-						//có rồi thì bỏ qua
-					}else{
-						cats.push(itemcat)
-					}
-				})
-			})
-
-			cats.forEach(keycat => {
-				firebaseApp.database().ref('chuyenMuc').child(keycat).once('value', snapcat => {
-
-					var keys = {}
-					keys = snapcat.val()
-					keys.key = keycat
-
-					catSlider.push(keys)
-				})
-			})
-		})
+	if (dataUser) {
+		loadDataUser()
 	}
 
-	getCatslider()
-
-	setTimeout(() => {
-		setLoad(true)
-	}, 3000)
-
-	return(
-		<View style={styles.container}>
-			<FlatList
-				data={catSlider} 
-				renderItem={({ item }) => (
-					<TouchableOpacity style={styles.listContainer}>
-						<AntDesign name="tags" size={24} color="#34495e" style={{marginRight: 15}}/>
-						<Text>{item.title}</Text>
-					</TouchableOpacity>
-				)}
-	  			//inverted={true}
-	  			keyExtractor={item => item.key}
-	  		/>
-		</View>
-	)
-}
-
-function setlikeslider(id, uid, like, countLike){
-    if (like === false) {
-        //người dùng chưa like bao giờ
-        //lưu vào thông tin người dùng và chuyển ngôi sao thành màu vàng
-        firebaseApp.database().ref('Users').child(uid).once('value', snapuser => {
-            var likes = []
-            if (snapuser.val().sliderslike !== undefined) {
-                //đã có
-
-                likes = snapuser.val().sliderslike
-
-                likes.push(id)
-            }else{
-                //chưa có biến này
-                likes.push(id)
-            }
-
-            firebaseApp.database().ref('Users').child(uid).update({
-                sliderslike: likes
-            })
-
-            ToastAndroid.show('Đã thêm vào yêu thích', ToastAndroid.SHORT)
-        })
-
-        firebaseApp.database().ref('Sliders').child(id).update({
-            countLike: countLike + 1
-        })
-    }else{
-        //người dùng đã like, giờ muốn bỏ đi
-        firebaseApp.database().ref('Users').child(uid).once('value', snapuser => {
-
-            var likes = [] 
-            likes = snapuser.val().sliderslike
-
-            var index = likes.indexOf(id)
-
-            likes.splice(index, 1)
-           
-            firebaseApp.database().ref('Users').child(uid).update({
-                sliderslike: likes
-            })
-
-            ToastAndroid.show('Đã xóa khỏi yêu thích')
-        })
-
-        firebaseApp.database().ref('Calculators').child(id).update({
-            countLike: countLike - 1
-        })
-    }			
-
-}
-
-const onShare = async (id, countShare) => {
-
-	firebaseApp.database().ref('Sliders').child(''+id).update({
-		countShare: countShare + 1
+	var download = []
+	TOPDOWNLOAD.forEach(item => {
+		download.push(
+			<TouchableOpacity key={item.key}
+				style={{margin: 10}}
+				onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title: item.title, uid: uid})}>
+				<Image style={{width: 150, height: 100, borderRadius: 5}} source={{uri: item.image}} />
+            </TouchableOpacity>
+		)
 	})
 
-    const result = await Share.share({
-      	title: 'Thư viện y học miễn phí - Ebook, bài giảng, video khóa học',
-        message: `Thư viện y học miễn phí - Ebook, bài giảng, video khóa học \n\n Tải không giới hạn, không yêu cầu đăng ký thành viên, hoàn toàn miễn phí, cập nhật liên tục`,
-        url: 'https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc',
-    });
-}
+  	NetInfo.fetch().then(state => {
+	  	setNet(state.isConnected)
 
-const Tab = createMaterialTopTabNavigator();
+	  	if (state.isConnected) {
+	  		setTimeout(() => {
+	  			setLoad(true)
+	  		}, 2000)
 
-export default function SlidersScreen({navigation}){
-	React.useLayoutEffect(() => {
-	    navigation.setOptions({
-	    	title: 'Bài giảng',
-	    	headerRight: () => (
-		      	<View style={{flexDirection: 'row', justifyContents: 'center', alignItems: 'center'}}>
-		      		<TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => navigation.navigate('SearchSlider')}>
-			        	<AntDesign name="search1" size={24} color="#34495e" />
-		        	</TouchableOpacity>
-		      	</View>
-	        
-	      	),
-	    });
-  	}, [navigation]);
+	  		if (CATs.length == 0) {
+	  			setLoad(false)
+	  		}
+	  	}
+
+	});
+
 	return (
-		<Tab.Navigator>
-			<Tab.Screen name="Mới nhất" component={NewSlider} />
-      		<Tab.Screen name="Đã xem" component={Viewed} />
-      		<Tab.Screen name="Chuyên mục" component={Categories} />
-    	</Tab.Navigator>
+
+		<View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+			{
+				net == false ?
+				<View>
+					<Text>Lỗi kết nối</Text>
+				</View>
+
+				: 
+
+				SLIDERS.length == 0 ?
+
+				<View>
+					<Text>Loadding...</Text>
+				</View>
+
+				: 
+
+				<ScrollView style={styles.container}>
+					<StatusBar
+				        animated={true}
+				        hidden={true}
+				        backgroundColor='white'
+			        />
+
+			        <View style={styles.titleContainer}>
+			        	<Text style={styles.title}>Mới nhất</Text>
+			        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'New', name: 'Chuyên mục'})}>
+			        		<Text style={styles.seemore}>Xem thêm</Text>
+			        	</TouchableOpacity>
+			        </View>
+
+			        <View style={styles.bookContainerHorizontal}>
+			        	<FlatList
+				  			data={SLIDERS} 
+				  			renderItem={({ item }) => (
+				                <TouchableOpacity
+				                	style={{paddingHorizontal: 10}}
+				                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title, uid: uid})}>
+					            	<Image style={styles.sliderImg} source={{uri: item.image}}/>
+				                </TouchableOpacity>
+					        )}
+							horizontal={true}
+				  	 		keyExtractor={item => item.key}
+			  	 		/>
+			        </View>
+
+			        <View style={styles.titleContainer}>
+			        	<Text style={styles.title}>Chuyên mục</Text>
+			        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'Chuyên mục', name: 'Chuyên mục'})}>
+			        		<Text style={styles.seemore}>Xem thêm</Text>
+			        	</TouchableOpacity>
+			        </View>
+			        <View style={styles.bookContainerHorizontal}>
+			        	<FlatList
+				  			data={CATs} 
+				  			renderItem={({ item }) => (
+				                <TouchableOpacity style={styles.btnCat} 
+				                	onPress={() => navigation.navigate('Chuyên mục sách', {title: item.title, id: item.key, fill: 'Slider'})}>
+				                	{
+				                		item.img !== '' ?
+											<Image style={styles.catImg} source={{uri: item.img}}/>
+				                		: <AntDesign name="tagso" size={50} color="#3498db" style={styles.catImg} />
+				                	}
+					            	<Text numberOfLines={1} style={styles.catTitle}>{item.title}</Text>
+				                </TouchableOpacity>
+					        )}
+							horizontal={true}
+				  	 		keyExtractor={item => item.key}
+			  	 		/>
+			        </View>
+
+			        <View style={{marginVertical: 20, paddingHorizontal: 10, flexDirection: 'row'}}>
+			        	<TouchableOpacity style={styles.btnTag}>
+			        		<Text style={{...styles.title, color: '#2c3e50'}}>Tải nhiều</Text>
+			        	</TouchableOpacity>
+			        </View>
+			        <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+			        	{download}
+			        </View>
+				</ScrollView>
+			}
+		</View>
+
+		
 	);
 }
+
+const styles = StyleSheet.create({
+
+	container:{
+		flex: 1,
+		backgroundColor: '#f9f9f9',
+		paddingHorizontal: 10
+	},
+
+	titleContainer:{
+		padding: 10,
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+
+	title:{
+		flex: 1,
+		color: '#414141',
+		fontSize: 18,
+		fontWeight: 'bold'
+	},
+
+	seemore:{
+		color: '#676767',
+		fontStyle: 'italic',
+		padding: 5
+	},
+
+	bookContainerHorizontal:{
+		padding: 10
+	},
+
+	btnCat:{
+		width: 100,
+		height: 100,
+		marginRight: 10,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+
+	catImg:{
+		width: 50,
+		height: 50,
+		marginBottom: 10
+	},
+
+	btnTag:{
+		paddingRight: 20
+	},
+
+	containerBook:{
+		padding: 8,
+		flexDirection: 'column',
+	},
+
+	bookContain:{
+		margin: 8,
+		width: 100,
+		height: 'auto'
+
+	},
+
+	sliderImg:{
+		width: 200,
+		height: 130,
+		marginBottom: 8,
+		borderWidth: 0,
+		borderRadius: 5,
+		shadowColor: "#000",
+		shadowOffset: {
+			width: 0,
+			height: 16,
+		},
+		shadowOpacity: 0.58,
+		shadowRadius: 16,
+	},
+
+	bookImgVer:{
+		width: 100,
+		height: 150,
+		marginRight: 20
+	},
+
+	bookTitle:{
+		fontWeight: '200',
+	},
+
+	bookAuthor:{
+
+		fontSize: 14,
+		color: '#707070'
+	},
+
+	catList:{
+		paddingVertical: 15,
+		marginHorizontal: 10,
+		borderBottomWidth: 1,
+		borderBottomColor: '#e0e0e0',
+		flexDirection: 'row'
+	},
+
+	ngonnguContainer:{
+		justifyContent: 'center',
+		flexDirection: 'row'
+	}
+
+})
