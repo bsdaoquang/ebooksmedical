@@ -5,25 +5,41 @@ import {
 }from 'react-native'
 
 import {firebaseApp} from '../../firebaseConfig'
-import { FontAwesome } from '@expo/vector-icons'; 
+import { FontAwesome } from '@expo/vector-icons';
+import i18n from '../../i18n'
 
 export default function LoginScreen({navigation}){
+
+	React.useLayoutEffect(() => {
+	    navigation.setOptions({
+	    	headerTitle: '',
+	      	headerStyle:{
+    			backgroundColor: '#fafafa',
+    			shadowColor: 'transparent',
+		        shadowRadius: 0,
+		        shadowOffset: {
+		            height: 0,
+		        },
+		        elevation:0
+    		}
+	    });
+  	}, [navigation]);
 
 	const [email, setEmail] = useState('')
 	const [pass, setPass] = useState('')
 
 	function login(){
 		if (email === '') {
-			alert('Bạn chưa nhập email')
+			alert(i18n.t('nhapEmail'))
 		}else if (pass === '') {
-			alert('Bạn chưa nhập mật khẩu hoặc Mật khẩu không đúng')
+			alert(i18n.t('nhapmatkhau'))
 		}else{
 			firebaseApp.auth().signInWithEmailAndPassword(email, pass)
 			.then((userCredential) => {
 
 				var user = userCredential.user
 
-				ToastAndroid.show('Chào mừng ' + user.displayName, ToastAndroid.SHORT)
+				ToastAndroid.show(i18n.t('welcome') + user.displayName, ToastAndroid.SHORT)
 				navigation.navigate('Trang chủ')
 			}).catch((error) => {
 				alert(error)
@@ -35,7 +51,7 @@ export default function LoginScreen({navigation}){
 		<View style={styles.container}>
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 				<View style={styles.inner}>
-					<Text style={{fontWeight: 'bold', fontSize: 24, color: '#34495e'}}>ĐĂNG NHẬP</Text>
+					<Text style={{fontWeight: 'bold', fontSize: 24, color: '#34495e', textTransform: 'uppercase'}}>{i18n.t('dangnhap')}</Text>
 					<View style={styles.inputContainer}>
 						<FontAwesome name="user-circle-o" size={20} color="#34495e" style={styles.inputIcont} />
 						<TextInput 
@@ -51,27 +67,26 @@ export default function LoginScreen({navigation}){
 						<FontAwesome name="unlock-alt" size={20} color="#34495e" style={styles.inputIcont} />
 						<TextInput 
 							style={styles.input}
-							placeholder = 'Mật khẩu'
+							placeholder = {i18n.t('matkhau')}
 							secureTextEntry = {true}
 							onChangeText={pass => setPass(pass)}
 						/>
 					</View>
 					<View style={{marginVertical: 20, justifyContent: 'flex-end', width: '100%'}}>
 						<TouchableOpacity>
-							<Text style={{fontStyle: 'italic', color: '#2980b9'}}>Quên mật khẩu</Text>
+							<Text style={{fontStyle: 'italic', color: '#2980b9'}}>{i18n.t('quenmatkhau')}</Text>
 						</TouchableOpacity>
 					</View>
 
 					<TouchableOpacity
 						onPress={() => login()}
 						style={{backgroundColor: '#e74c3c', paddingVertical: 8, paddingHorizontal: 50, borderRadius: 3}}>
-						<Text style={{color: 'white'}}>Đăng nhập</Text>
+						<Text style={{color: 'white'}}>{i18n.t('dangnhap')}</Text>
 					</TouchableOpacity>
 
-					<View style={{flexDirection: 'row' , marginTop: 20}}>
-						<Text style={{color: '#34495e', fontStyle: 'italic'}}>Bạn chưa có tài khoản? </Text>
-						<TouchableOpacity><Text style={{color: '#2980b9'}} onPress={() => navigation.navigate('Đăng ký')}>Đăng ký</Text></TouchableOpacity>
-					</View>
+					<TouchableOpacity onPress={() => navigation.navigate('Đăng ký')}>
+						<Text style={{color: '#2980b9', marginTop: 20, fontStyle: 'italic'}}>{i18n.t('taotaikhoan')}</Text>
+					</TouchableOpacity>
 					
 				</View>
 			</TouchableWithoutFeedback>

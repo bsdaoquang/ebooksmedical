@@ -4,6 +4,7 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'; 
 import {firebaseApp} from '../firebaseConfig'
+import i18n from '../i18n'
 
 export default function MyAlerts({navigation, route}){
 
@@ -15,7 +16,7 @@ export default function MyAlerts({navigation, route}){
 
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
-	    	title: 'Thông báo',
+	    	title: i18n.t('tinnhan'),
 	    	headerStyle:{
     			backgroundColor: '#fafafa',
     			shadowColor: 'transparent',
@@ -28,7 +29,7 @@ export default function MyAlerts({navigation, route}){
 
     		headerRight: () => (
     			<TouchableOpacity style={{paddingHorizontal: 20}}
-    				onPress={() => ToastAndroid.show('Đánh dấu tất cả là đã đọc', ToastAndroid.SHORT)}>
+    				onPress={() => ToastAndroid.show(local == 'vi-VN' ? 'Đánh dấu tất cả là đã đọc' : 'read all', ToastAndroid.SHORT)}>
     				<Ionicons name="checkmark-done-sharp" size={24} color="#34495e" />
     			</TouchableOpacity>	
     		)

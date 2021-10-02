@@ -4,6 +4,7 @@ import {
 } from 'react-native'
 import { AntDesign, Feather, Fontisto, Ionicons } from '@expo/vector-icons';
 import {firebaseApp} from '../../firebaseConfig'
+import i18n from '../../i18n'
 
 export default function ProfileScreen({navigation, route}){
 
@@ -89,7 +90,7 @@ export default function ProfileScreen({navigation, route}){
 					onPress={() => navigation.navigate('Nhận điểm', {email: userData.email, uid: userData.key})}
 					style={{alignItems: 'center'}}>
 					<Text style={{...styles.title, fontWeight: 'bold', fontSize: 24}}>{userData.medCoin}</Text>
-					<Text style={styles.desc}>Điểm</Text>
+					<Text style={styles.desc}>{i18n.t('diem')}</Text>
 				</TouchableOpacity>
 
 				<TouchableOpacity
@@ -107,14 +108,14 @@ export default function ProfileScreen({navigation, route}){
 					: null
 				}
 				
-				<Text style={{...styles.desc, color: '#414141'}}>Trạng thái: {userData.xacMinh === false ? 'Chưa được xác minh' : 'Đã xác minh'}</Text>
+				<Text style={{...styles.desc, color: '#414141'}}>{i18n.t('trangthai')}: {userData.xacMinh === false ? i18n.t('chuaxacminh') : i18n.t('daxacminh')}</Text>
 
 				{
 					userData.xacMinh === false ?
 
 					<TouchableOpacity 
 						onPress={() => reVerifyEmail()}>
-						<Text style={{...styles.desc, color: '#3498db'}}>Gửi lại email xác minh</Text>
+						<Text style={{...styles.desc, color: '#3498db'}}>{i18n.t('guiemailxacminh')}</Text>
 					</TouchableOpacity>
 
 					: null

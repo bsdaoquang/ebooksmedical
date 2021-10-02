@@ -4,6 +4,7 @@ import {
 } from 'react-native'
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import i18n from '../i18n'
 
 import {
 	DrawerContentScrollView,
@@ -11,8 +12,6 @@ import {
 } from '@react-navigation/drawer'
 
 import * as Linking from 'expo-linking';
-import * as Localization from 'expo-localization';
-
 //import firebase
 import {firebaseApp} from '../firebaseConfig'
 
@@ -23,19 +22,11 @@ import {
 
 const onShare = async () => {
     const result = await Share.share({
-      	title: 'Thư Viện Y Học',
+      	title: i18n.t('title'), 
         message: 'https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc',
         url: 'https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc',
     });
 }
-
-Notifications.setNotificationHandler({
-	handleNotification: async () => ({
-		shouldShowAlert: true,
-		shouldPlaySound: false,
-		shouldSetBadge: false,
-	}),
-});
 
 export default function DrawerCustom({navigation}){
 
@@ -52,7 +43,7 @@ export default function DrawerCustom({navigation}){
 	})
 
 	function changePass(){
-		alert('Một email hướng dẫn đổi mật khẩu đã được gửi cho bạn, hãy kiểm tra email và làm theo hướng dẫn')
+		alert(i18n.t('kiemtraemail'))
 		firebaseApp.auth().sendPasswordResetEmail(user.email)
 	}
 
@@ -84,7 +75,7 @@ export default function DrawerCustom({navigation}){
 	}
 	
 	function showToast(){
-		ToastAndroid.show('Đang phát triển', ToastAndroid.SHORT)
+		ToastAndroid.show(local == 'vi-VN' ? 'Đang phát triển' : 'Developing', ToastAndroid.SHORT)
 	}
 	return(
 		<ScrollView style={styles.drawerContain}>
@@ -101,7 +92,7 @@ export default function DrawerCustom({navigation}){
 							<Text style={{color: '#34495e', fontWeight: 'bold', textTransform: 'uppercase', fontSize: 20, paddingHorizontal: 5}}>{userData.displayName}</Text>
 						</View>
 						
-						<Text style={{fontStyle: 'italic', color: 'coral'}}>{userData.medCoin} Điểm</Text>
+						<Text style={{fontStyle: 'italic', color: 'coral', textTransform: 'capitalize'}}>{userData.medCoin + ' ' + i18n.t('diem')}</Text>
 					</View>
 				</View>
 				:
@@ -113,7 +104,7 @@ export default function DrawerCustom({navigation}){
 				
 					<View style={{color: 'white', marginVertical: 10}}>
 						<TouchableOpacity onPress={() => navigation.navigate('Đăng nhập')}>
-							<Text style={{color: '#34495e', fontWeight: 'bold'}}>Đăng nhập</Text>
+							<Text style={{color: '#34495e', fontWeight: 'bold'}}>{i18n.t('dangnhap')}</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -126,41 +117,41 @@ export default function DrawerCustom({navigation}){
 
 						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ProfileScreen', {userData: userData})}>
 							<Ionicons name="person-circle" size={24} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Tài khoản</Text>
+							<Text style={styles.items}>{i18n.t('taikhoan')}</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Thông báo', {uid: uid})}>
 							<FontAwesome name="bell" size={24} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Thông báo {countAlerts > 0 ? <Text style={{color: 'red'}}>({countAlerts})</Text> : null}</Text>
+							<Text style={styles.items}>{i18n.t('tinnhan')} {countAlerts > 0 ? <Text style={{color: 'red'}}>({countAlerts})</Text> : null}</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity style={styles.button} onPress={() => showToast()}>
 							<FontAwesome name="upload" size={24} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Upload</Text>
+							<Text style={styles.items}>{i18n.t('tailen')}</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Sách tải lên', {uid: userData.key})}>
 							<FontAwesome name="book" size={24} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Sách của bạn</Text>
+							<Text style={styles.items}>{i18n.t('sachcuaban')}</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Nhận điểm', {email: userData.email, uid: uid})}>
 							<FontAwesome5 name="funnel-dollar" size={20} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Nhận thêm điểm tải</Text>
+							<Text style={styles.items}>{i18n.t('nhandiem')}</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity style={styles.button}
 							onPress={() => changePass()}
 						>
 							<FontAwesome name="unlock" size={24} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>Đổi mật khẩu</Text>
+							<Text style={styles.items}>{i18n.t('doimatkhau')}</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity style={styles.button}
 							onPress={() => logout()}
 						>
 							<AntDesign name="poweroff" size={20} color="red" style={{...styles.iconItems, color: 'red'}}/>
-							<Text style={{...styles.items, color: 'red'}}>Đăng xuất</Text>
+							<Text style={{...styles.items, color: 'red'}}>{i18n.t('dangxuat')}</Text>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -175,39 +166,39 @@ export default function DrawerCustom({navigation}){
 						onPress={() => Linking.openURL('https://m.me/yhocso')}
 					>
 						<MaterialIcons name="book" size={24} color="#34495e" style={styles.iconItems}/>
-						<Text style={styles.items}>Yêu cầu sách</Text>
+						<Text style={styles.items}>{i18n.t('yeucausach')}</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={styles.button}
 						onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc')}
 					>
 						<FontAwesome5 name="facebook-messenger" size={20} color="#34495e" style={styles.iconItems} />
-						<Text style={styles.items}>Góp ý và Báo lỗi</Text>
+						<Text style={styles.items}>{i18n.t('baoloi')}</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={styles.button}
 						onPress={() => navigation.navigate('Thông tin')}
 					>	
 						<Ionicons name="information-circle-outline" size={24} color="#34495e"  style={styles.iconItems}/>
-						<Text style={styles.items}>Thông tin ứng dụng</Text>
+						<Text style={styles.items}>{i18n.t('thongtin')}</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={styles.button}
 						onPress={() => onShare()}
 					>
 						<MaterialIcons name="share" size={24} color="#34495e" style={styles.iconItems}/>
-						<Text style={styles.items}>Gửi cho Bạn bè</Text>
+						<Text style={styles.items}>{i18n.t('chiase')}</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity style={styles.button}
 						onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc')}
 					>
 						<FontAwesome name="star" size={24} color="#34495e" style={styles.iconItems}/>
-						<Text style={styles.items}>Đánh giá ứng dụng</Text>
+						<Text style={styles.items}>{i18n.t('danhgia')}</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity style={styles.button}
 						onPress={() => navigation.navigate('Ứng dụng khác')}
 					>
 						<Entypo name="grid" size={28} color="#34495e" style={styles.iconItems}/>
-						<Text style={{...styles.items}}>Ứng dụng khác</Text>
+						<Text style={{...styles.items}}>{i18n.t('ungdungkhac')}</Text>
 					</TouchableOpacity>
 				</View>
 

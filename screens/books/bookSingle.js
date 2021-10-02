@@ -13,7 +13,7 @@ import {showAdInter} from '../../admobConfig'
 import {AdMobInterstitial} from 'expo-ads-admob';
 import * as WebBrowser from 'expo-web-browser';
 import { useScrollToTop } from '@react-navigation/native';
-
+import i18n from '../../i18n'
 
 var database = firebaseApp.database();
 
@@ -21,11 +21,12 @@ export default function BookSingle({ route, navigation }){
 	var {bookId, title, uid } = route.params;
 
 	const [id, setId] = useState(route.params.bookId)
+	
 	const ref = React.useRef(null);
 
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
-	    	headerTitle: 'Book Detail',
+	    	headerTitle: i18n.t('thongtinsach'),
     		headerTransparent: true,
 	    });
   	}, [navigation]);
@@ -126,7 +127,7 @@ export default function BookSingle({ route, navigation }){
 	function downloadBook(bookURL, down, view){
 		setLoadAds(true)
 
-		ToastAndroid.show('Đang tải quảng cáo', ToastAndroid.SHORT)
+		ToastAndroid.show(i18n.t('dangtaiquangcao'), ToastAndroid.SHORT)
 		showAdInter()
 
 		AdMobInterstitial.addEventListener('interstitialDidClose', () => {	
@@ -165,10 +166,10 @@ export default function BookSingle({ route, navigation }){
 
 				WebBrowser.openBrowserAsync('https://drive.google.com/uc?export=download&id=' + bookURL)
 			}else{
-				alert('Số điểm còn lại không đủ, xin vui lòng nạp thêm')
+				alert(i18n.t('diemkhongdu') + ' ' + i18n.t('vuilongnapthem'))
 			}
 		}else{
-			alert('Bạn cần đăng nhập để thực hiện chức năng này')
+			alert(i18n.t('vuilongdangnhap'))
 		}
 
 	}
@@ -180,11 +181,11 @@ export default function BookSingle({ route, navigation }){
 		})
 
 	    const result = await Share.share({
-	      	title: title,
-	        message: title + '\n\n' +
+	      	title: i18n.t('title'),
+	        message: i18n.t('title') + '\n\n' +
 	        	description.split('\n')[0] + '\n\n' +
 
-	        	'Phần mềm tải sách y học miễn phí cho điện thoại' +
+	        	i18n.t('gioithieuapp') +
 	        	`
 	        	https://play.google.com/store/apps/details?id=com.bsdaoquang.thuvienyhoc\n
 	        	`,
@@ -298,9 +299,6 @@ export default function BookSingle({ route, navigation }){
 		})
 	}
 
-	
-	var language = Localization.locale
-
 	return (
 		<View style={styles.container}>
 			<ScrollView style={{marginBottom: 30}} ref={ref}>
@@ -351,17 +349,17 @@ export default function BookSingle({ route, navigation }){
 							<View style={{flexDirection: 'row', width: '100%', justifyContent: 'space-evenly'}}>
 								<View style={styles.iconTop}>
 									<Text style={styles.titleIcon}>{ebook.countDown}</Text>
-									<Text style={{color: '#34495e'}}>Downloaded</Text>
+									<Text style={{color: '#34495e'}}>{i18n.t('luottai')}</Text>
 								</View>
 
 								<View style={styles.iconTop}>
 									<Text style={styles.titleIcon}>{ebook.countView}</Text>
-									<Text style={{color: '#34495e'}}>View</Text>
+									<Text style={{color: '#34495e'}}>{i18n.t('luotxem')}</Text>
 								</View>
 
 								<View style={styles.iconTop}>
 									<Text style={styles.titleIcon}>{ebook.ngonngu === 'Tiếng Việt' ? 'Vie' : 'Eng'}</Text>
-									<Text style={{color: '#34495e'}}>Language</Text>
+									<Text style={{color: '#34495e'}}>{i18n.t('ngonngu')}</Text>
 								</View>
 							</View>
 						</View>
@@ -380,7 +378,7 @@ export default function BookSingle({ route, navigation }){
 				{
 					ebook.description !== '' ?
 						<View style={styles.reviewContainer}>
-							<Text style={{...styles.title, paddingVertical: 15}}>Description</Text>
+							<Text style={{...styles.title, paddingVertical: 15}}>{i18n.t('mota')}</Text>
 							<Text numberOfLines={readLine} style={styles.tetxReview}>{ebook.description}</Text>
 							<TouchableOpacity 
 							style={styles.buttonReadmore}
@@ -392,10 +390,10 @@ export default function BookSingle({ route, navigation }){
 				}
 				
 				<View style={styles.reviewContainer}>
-					<Text style={{...styles.title, paddingVertical: 10}}>Product details</Text>
+					<Text style={{...styles.title, paddingVertical: 10}}>{i18n.t('thongtinsach')}</Text>
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Publisher: </Text>
+							<Text style={styles.textTitleInfo}>{i18n.t('xuatban')}: </Text>
 							<TouchableOpacity
 								onPress={() => navigation.navigate('BookByKey', {key: ebook.datePublish, by: 'datePublish'})}
 							>
@@ -406,7 +404,7 @@ export default function BookSingle({ route, navigation }){
 
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Author: </Text>
+							<Text style={styles.textTitleInfo}>{i18n.t('tacgia')}: </Text>
 							<TouchableOpacity
 								onPress={() => navigation.navigate('BookByKey', {key: ebook.author, by: 'author'})}
 							>
@@ -417,7 +415,7 @@ export default function BookSingle({ route, navigation }){
 
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Category: </Text>
+							<Text style={styles.textTitleInfo}>{i18n.t('chuyenmuc')}: </Text>
 							<View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
 								{catTitle}
 							</View>
@@ -426,7 +424,7 @@ export default function BookSingle({ route, navigation }){
 
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Language: </Text>
+							<Text style={styles.textTitleInfo}>{i18n.t('ngonngu')}: </Text>
 							<TouchableOpacity
 								onPress={() => navigation.navigate('BookByKey', {key: ebook.ngonngu, by: 'ngonngu'})}
 							>
@@ -437,13 +435,13 @@ export default function BookSingle({ route, navigation }){
 
 					<View style={styles.infoBook}>
 						<View style={styles.titleInfo}>
-							<Text style={styles.textTitleInfo}>Upload: </Text>
+							<Text style={styles.textTitleInfo}>{i18n.t('tailen')}: </Text>
 							<Text style={{...styles.textDescInfo, color: '#3498db'}}>{ebook.displayName}</Text>
 						</View>
 					</View>
 				</View>
 				<View style={styles.reviewContainer}>
-					<Text style={{...styles.title, paddingVertical: 8}}>Products related to this item</Text>
+					<Text style={{...styles.title, paddingVertical: 8}}>{i18n.t('cungchuyenmuc')}</Text>
 					<View style={{flexDirection: 'row', paddingVertical: 10, flexWrap: 'wrap',}}>
 						{relatedBook}
 					</View>
@@ -464,12 +462,12 @@ export default function BookSingle({ route, navigation }){
 				<View style={{flexDirection: 'row', flex: 1}}>
 					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#d35400'}}
 						onPress={() => downloadVIP(ebook.downloadLink, ebook.countDown)}>
-						<Text style={{color: 'white'}}>Tải ngay</Text>
+						<Text style={{color: 'white'}}>{i18n.t('taingay')}</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#2980b9'}}
 						onPress={() => downloadBook(ebook.downloadLink, ebook.countDown, 'down')}>
-						<Text style={{color: 'white'}}>Tải miễn phí</Text>
+						<Text style={{color: 'white'}}>{i18n.t('taimienphi')}</Text>
 					</TouchableOpacity>
 				</View>
 				

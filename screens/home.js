@@ -8,11 +8,12 @@ import * as StoreReview from 'expo-store-review'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import * as Linking from 'expo-linking';
 import NetInfo from '@react-native-community/netinfo';
-
-//import NotificationScreen from './notification'
+import i18n from '../i18n'
 
 export default function HomeScreen({navigation}){
 	const [net, setNet] = useState(true)
+	const [load, setLoad] = useState(false)
+	const [top, settop] = useState(1)
 
 	var EBOOKS = []
 	var CATs = []
@@ -78,9 +79,7 @@ export default function HomeScreen({navigation}){
 
 	getTopView()
 
-	const [load, setLoad] = useState(false)
 	const [uid, setUid] = useState()
-	const [top, settop] = useState(1)
 
 	firebaseApp.auth().onAuthStateChanged((user) => {
 		if (user) {
@@ -182,7 +181,7 @@ export default function HomeScreen({navigation}){
 	  			setLoad(true)
 	  		}, 2000)
 
-	  		if (CATs.length == 0) {
+	  		if (TOPVIEW.length == 0) {
 	  			setLoad(false)
 	  		}
 	  	}
@@ -195,7 +194,7 @@ export default function HomeScreen({navigation}){
 			{
 				net == false ?
 				<View>
-					<Text>Lỗi kết nối</Text>
+					<Text>{local == 'vi-VN' ? 'Lỗi kết nối' : 'Net error, please try againt'}</Text>
 				</View>
 
 				: 
@@ -222,7 +221,7 @@ export default function HomeScreen({navigation}){
 				        			onPress={() => navigation.navigate('ProfileScreen', {userData: dataUser})}
 				        			style={{flexDirection: 'row', backgroundColor: '#ecf0f1', padding: 10, borderRadius: 10, margin: 10}}>
 				        			<View style={{flex: 1}}>
-							        	<Text style={{...styles.title, fontWeight: 'normal'}}>Chào mừng bạn!</Text>
+							        	<Text style={{...styles.title, fontWeight: 'normal'}}>{i18n.t('welcome')}</Text>
 							        	<Text style={{fontWeight: 'bold', fontSize: 24}}>{dataUser.displayName}</Text>
 						        	</View>
 						        	<View style={{
@@ -234,7 +233,7 @@ export default function HomeScreen({navigation}){
 						        		height: 60}}>
 						        		<View style={{flex: 1, alignItems: 'center'}}>
 						        			<Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>{dataUser.medCoin}</Text>
-											<Text style={{color: 'white'}}>điểm</Text>	
+											<Text style={{color: 'white'}}>{i18n.t('diem')}</Text>	
 						        		</View>
 						        	</View>
 				        		</TouchableOpacity>
@@ -258,7 +257,7 @@ export default function HomeScreen({navigation}){
 				        	flex: 1
 				        }}
 				        	onPress={() => navigation.navigate('Tìm kiếm')}>
-				        	<Text style={{...styles.seemore, flex: 1}}>Bạn muốn tìm gì hôm nay?</Text>
+				        	<Text style={{...styles.seemore, flex: 1}}>{i18n.t('timkiemgi')}</Text>
 				        	<AntDesign name="search1" size={20} color="#34495e" />
 				        </TouchableOpacity>
 
@@ -269,15 +268,15 @@ export default function HomeScreen({navigation}){
 			        
 
 			        <View style={styles.titleContainer}>
-			        	<Text style={styles.title}>The Latest</Text>
+			        	<Text style={styles.title}>{i18n.t('moinhat')}</Text>
 			        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'New', name: 'Chuyên mục'})}>
-			        		<Text style={styles.seemore}>see more</Text>
+			        		<Text style={styles.seemore}>{i18n.t('xemthem')}</Text>
 			        	</TouchableOpacity>
 			        </View>
 
 			        <View style={styles.bookContainerHorizontal}>
 			        	<FlatList
-				  			data={EBOOKS} 
+				  			data={EBOOKS}
 				  			renderItem={({ item }) => (
 				                <TouchableOpacity
 				                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title, uid: uid})}>
@@ -290,9 +289,9 @@ export default function HomeScreen({navigation}){
 			        </View>
 
 			        <View style={styles.titleContainer}>
-			        	<Text style={styles.title}>Categories</Text>
+			        	<Text style={styles.title}>{i18n.t('chuyenmuc')}</Text>
 			        	<TouchableOpacity onPress={() => navigation.navigate('Chuyên Mục', {title: 'Chuyên mục', name: 'Chuyên mục'})}>
-			        		<Text style={styles.seemore}>see more</Text>
+			        		<Text style={styles.seemore}>{i18n.t('xemthem')}</Text>
 			        	</TouchableOpacity>
 			        </View>
 			        <View style={styles.bookContainerHorizontal}>
@@ -316,10 +315,10 @@ export default function HomeScreen({navigation}){
 
 			        <View style={{marginVertical: 20, paddingHorizontal: 10, flexDirection: 'row'}}>
 			        	<TouchableOpacity style={styles.btnTag} onPress={() => settop(1)}>
-			        		<Text style={{...styles.title, color: top === 1 ? '#2c3e50' : '#95a5a6', borderBottomWidth: top === 1 ? 1 : null, borderBottomColor: '#2c3e50', paddingBottom: 5}}>Top Download</Text>
+			        		<Text style={{...styles.title, color: top === 1 ? '#2c3e50' : '#95a5a6', borderBottomWidth: top === 1 ? 1 : null, borderBottomColor: '#2c3e50', paddingBottom: 5}}>{i18n.t('tainhieu')}</Text>
 			        	</TouchableOpacity>
 			        	<TouchableOpacity style={styles.btnTag} onPress={() => settop(2)}>
-			        		<Text style={{...styles.title, color: top === 2 ? '#2c3e50' : '#95a5a6', borderBottomWidth: top === 2 ? 1 : null, borderBottomColor: '#2c3e50', paddingBottom: 5}}>Top Read</Text>
+			        		<Text style={{...styles.title, color: top === 2 ? '#2c3e50' : '#95a5a6', borderBottomWidth: top === 2 ? 1 : null, borderBottomColor: '#2c3e50', paddingBottom: 5}}>{i18n.t('xemnhieu')}</Text>
 			        	</TouchableOpacity>
 			        </View>
 			        <View style={{paddingHorizontal: 10, flex: 1}}>

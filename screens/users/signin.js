@@ -5,9 +5,25 @@ import {
 }from 'react-native'
 
 import {firebaseApp} from '../../firebaseConfig'
-import { FontAwesome } from '@expo/vector-icons'; 
+import { FontAwesome } from '@expo/vector-icons';
+import i18n from '../../i18n'
 
 export default function SigninScreen({navigation}){
+
+	React.useLayoutEffect(() => {
+	    navigation.setOptions({
+	    	headerTitle: '',
+	      	headerStyle:{
+    			backgroundColor: '#fafafa',
+    			shadowColor: 'transparent',
+		        shadowRadius: 0,
+		        shadowOffset: {
+		            height: 0,
+		        },
+		        elevation:0
+    		}
+	    });
+  	}, [navigation]);
 
 	const [email, setEmail] = useState('')
 	const [pass, setPass] = useState('')
@@ -15,11 +31,11 @@ export default function SigninScreen({navigation}){
 
 	function login(){
 		if (email === '') {
-			alert('Bạn chưa nhập email')
+			alert(i18n.t('nhapEmail'))
 		}else if (pass === '') {
-			alert('Bạn chưa nhập mật khẩu hoặc Mật khẩu không đúng')
+			alert(i18n.t('nhapmatkhau'))
 		}else if(rePass !== pass){
-			alert('Mật khẩu bạn nhập không trùng nhau')
+			alert(i18n.t('matkhaukhongtrung'))
 		}else{
 			firebaseApp.auth().createUserWithEmailAndPassword(email, pass)
 			.then((userCredential) => {
@@ -58,8 +74,6 @@ export default function SigninScreen({navigation}){
 					taiKhoan: 'false',
 					categories: ''
 				}).then(() => {
-					ToastAndroid.show('Đăng ký tài khoản thành công', ToastAndroid.SHORT)
-
 					navigation.navigate('Trang chủ')
 				})
 			  	
@@ -76,7 +90,7 @@ export default function SigninScreen({navigation}){
 		<View style={styles.container}>
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 				<View style={styles.inner}>
-					<Text style={{fontWeight: 'bold', fontSize: 24, color: '#34495e'}}>ĐĂNG KÝ</Text>
+					<Text style={{fontWeight: 'bold', fontSize: 24, color: '#34495e', textTransform: 'uppercase'}}>{i18n.t('dangky')}</Text>
 					<View style={styles.inputContainer}>
 						<FontAwesome name="user-circle-o" size={20} color="#34495e" style={styles.inputIcont} />
 						<TextInput 
@@ -92,7 +106,7 @@ export default function SigninScreen({navigation}){
 						<FontAwesome name="unlock-alt" size={20} color="#34495e" style={styles.inputIcont} />
 						<TextInput 
 							style={styles.input}
-							placeholder = 'Mật khẩu'
+							placeholder = {i18n.t('matkhau')}
 							secureTextEntry = {true}
 							onChangeText={pass => setPass(pass)}
 						/>
@@ -102,7 +116,7 @@ export default function SigninScreen({navigation}){
 						<FontAwesome name="unlock-alt" size={20} color="#34495e" style={styles.inputIcont} />
 						<TextInput 
 							style={styles.input}
-							placeholder = 'Nhập lại mật khẩu'
+							placeholder = {i18n.t('nhaplaimatkhau')}
 							secureTextEntry = {true}
 							onChangeText={rePass => setRePass(rePass)}
 						/>
@@ -111,13 +125,12 @@ export default function SigninScreen({navigation}){
 					<TouchableOpacity
 						onPress={() => login()}
 						style={{backgroundColor: '#e74c3c', paddingVertical: 8, paddingHorizontal: 50, borderRadius: 3, marginTop: 20}}>
-						<Text style={{color: 'white'}}>Đăng ký</Text>
+						<Text style={{color: 'white'}}>{i18n.t('dangky')}</Text>
 					</TouchableOpacity>
 
-					<View style={{flexDirection: 'row' , marginTop: 20}}>
-						<Text style={{color: '#34495e', fontStyle: 'italic'}}>Bạn đã có tài khoản? </Text>
-						<TouchableOpacity><Text style={{color: '#2980b9'}} onPress={() => navigation.navigate('Đăng nhập')}>Đăng nhập</Text></TouchableOpacity>
-					</View>
+					<TouchableOpacity onPress={() => navigation.navigate('Đăng nhập')}>
+						<Text style={{color: '#2980b9', marginTop: 20}}>{i18n.t('cotaikhoan')} {i18n.t('dangnhap')}</Text>
+					</TouchableOpacity>
 					
 				</View>
 			</TouchableWithoutFeedback>

@@ -1,25 +1,35 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import { 
 	Text, View, StyleSheet, Image, FlatList, TouchableOpacity, SafeAreaView, Alert, TextInput, ToastAndroid
 } from 'react-native'
-
 import { AntDesign, Entypo, FontAwesome, Ionicons } from '@expo/vector-icons';
 import {firebaseApp} from '../firebaseConfig'
+import i18n from '../i18n'
+import * as Linking from 'expo-linking'
 
 export default function SearchScreen({navigation}){
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
 	    	headerTitle: () => (
-		      	<View style={{flexDirection: 'row', justifyContents: 'center', alignItems: 'center', backgroundColor: '#e0e0e0', borderRadius: 5}}>
+		      	<View style={{flexDirection: 'row',paddingHorizontal: 10, justifyContents: 'center', alignItems: 'center', backgroundColor: '#ecf0f1', borderRadius: 20}}>
 		      		<AntDesign name="search1" size={20} color="#34495e" />
 		      		<TextInput
 		      			style={{flex: 1, padding: 5}}
-		      			placeholder = 'Tìm Ebooks'
+		      			placeholder = {i18n.t('timkiemgi')}
 		      			autoCapitalize = 'none'
 		      			onChangeText = {key => goSearch(key)}
 		      		/>
 		      	</View>
 	      	),
+	      	headerStyle:{
+    			backgroundColor: '#fafafa',
+    			shadowColor: 'transparent',
+		        shadowRadius: 0,
+		        shadowOffset: {
+		            height: 0,
+		        },
+		        elevation:0
+    		}
 	    });
   	}, [navigation]);
 	//vùng hiển thị sách
@@ -49,8 +59,6 @@ export default function SearchScreen({navigation}){
 
 		//bắt đầu tìm kiếm
 		var slugBook = []
-		var slugTag = []
-		var displayName = []
 
 		//lấy về các slug book
 		firebaseApp.database().ref('Ebooks').on('value', snap => {
@@ -65,104 +73,50 @@ export default function SearchScreen({navigation}){
 			})
 		})
 
-		//lấy về các chuyên mục
-		firebaseApp.database().ref('chuyenMuc').on('value', snap => {
-			snap.forEach(item => {
-				if (item.val().slug.includes(keysq)) {
-					var slugs = {}
-					slugs = item.val()
-					slugs.key = item.key
-					slugTag.push(slugs)
-				}
-			})
-		})
-
-		//danh sách người dùng
-		firebaseApp.database().ref('Users').on('value', snap => {
-			snap.forEach(item => {
-				if (item.val().displayName !== undefined) {
-					//có một số người không cập nhật tên nên sẽ bị undefined
-					var name = removeAccents(item.val().displayName).toLowerCase().replace(/ /g, "-")
-					if (name.includes(keysq)) {
-						var names = {}
-						names = item.val()
-						names.key = item.key
-
-						displayName.push(names)
-					}
-				}	
-
-			})
-		})
-
-		const [select, setSelect] = useState('book')
 		return(
-			<View style={{flex: 1}}>
-				<View style={{width: '100%', justifyContent: 'space-around', alignItems: 'center', flexDirection: 'row', backgroundColor: '#fff'}}>
-					<TouchableOpacity
-						style={{flex: 1, paddingVertical: 15, marginHorizontal: 5, justifyContent: 'center', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: select === 'book' ? '#3498db' : '#34495e'}}
-						onPress={() => setSelect('book')}>
-						<Text style={{color: select === 'book' ? '#3498db' : '#34495e'}}><FontAwesome name="book" size={18} color="#34495e" /> Ebook</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={{flex: 1,paddingVertical: 15, marginHorizontal: 5, justifyContent: 'center', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: select === 'tags' ? '#3498db' : '#34495e'}}
-						onPress={() => setSelect('tags')}>
-						<Text style={{color: select === 'tags' ? '#3498db' : '#34495e'}}><Ionicons name="md-pricetags" size={18} color="#34495e" /> Chuyên mục</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={{flex: 1, paddingVertical: 15, marginHorizontal: 5, justifyContent: 'center', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: select === 'user' ? '#3498db' : '#34495e'}}
-						onPress={() => setSelect('user')}>
-						<Text  style={{color: select === 'user' ? '#3498db' : '#34495e'}} ><FontAwesome name="user-circle-o" size={18} color="#34495e" /> Kênh</Text>
-					</TouchableOpacity>
-				</View>
-				<View style={{backgroundColor: '#fff'}}>
-					{
-						select === 'book' ?
-						<FlatList style={styles.containerBook}
-				  			data={slugBook} 
-				  			renderItem={({ item }) => (
-					            <View style={{...styles.bookContain, marginVertical: 8}}>
-					                <TouchableOpacity
-					                	style={{flexDirection: 'row'}}
-					                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
-						            	<Image style={{width: 75, height: 95, marginRight: 8, borderRadius: 3}} source={{uri: item.image}}/>
-						            	<View style={{flex: 1}}>
-						            		<Text style={{fontWeight: 'bold', width: '100%'}}>{item.title}</Text>
-						              		<Text>{item.author}</Text>
-						            	</View>
-					                </TouchableOpacity>
-					            </View>
-					        )}
-				  	 		keyExtractor={item => item.key}
-			  	 		/>
-						: select === 'tags' ?
-						<FlatList style={styles.containerBook}
-							data={slugTag} 
-							renderItem={({ item }) => (
-								<TouchableOpacity style={styles.catList} onPress={() => navigation.navigate('Chuyên mục', {title: item.title, id: item.key})}>
-									<AntDesign name="tags" size={24} color="#34495e" style={{marginRight: 15}}/>
-									<Text>{item.title}</Text>
-								</TouchableOpacity>
-							)}
-				  			//inverted={true}
-				  			keyExtractor={item => item.key}
-				  		/>
-						:
-						<FlatList style={styles.containerBook}
-							data={displayName} 
-							renderItem={({ item }) => (
-								<TouchableOpacity
-									onPress={() => navigation.navigate('Thành viên', {name: item.displayName, key: item.key})}
-									style={{...styles.catList, alignItems: 'center'}}>
-									<Image style={{width: 30, height: 30, borderRadius: 50, marginRight: 10}} source={{uri: item.photoURL}}/>
-									<Text>{item.displayName}</Text>
-								</TouchableOpacity>
-							)}
-				  			//inverted={true}
-				  			keyExtractor={item => item.key}
-				  		/>
-					}
-				</View>				
+			<View style={{flex: 1, backgroundColor: '#fafafa'}}>
+
+				{
+					slugBook.length == 0 ?
+
+					<View style={{...styles.container, padding: 20, alignItems: 'center'}}>
+						<Text>{i18n.t('khongtimthay')}</Text>
+						<TouchableOpacity 
+							onPress={() => Linking.openURL('https://m.me/yhocso')}
+							style={{
+								backgroundColor: '#1abc9c',
+								padding: 8,
+								width: '50%',
+								marginTop: 20,
+								borderRadius: 20,
+								justifyContent: 'center',
+								alignItems: 'center'
+							}}>
+							<Text style={{color: 'white'}}>{i18n.t('yeucausach')}</Text>
+						</TouchableOpacity>
+					</View>
+
+					:
+
+					<FlatList style={styles.containerBook}
+			  			data={slugBook} 
+			  			renderItem={({ item }) => (
+				            <View style={{...styles.bookContain, marginVertical: 8}}>
+				                <TouchableOpacity
+				                	style={{flexDirection: 'row'}}
+				                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
+					            	<Image style={{width: 75, height: 95, marginRight: 8, borderRadius: 3}} source={{uri: item.image}}/>
+					            	<View style={{flex: 1}}>
+					            		<Text style={{fontWeight: 'bold', width: '100%'}}>{item.title}</Text>
+					              		<Text>{item.author}</Text>
+					            	</View>
+				                </TouchableOpacity>
+				            </View>
+				        )}
+			  	 		keyExtractor={item => item.key}
+		  	 		/>
+				}
+
 			</View>
 		)
 	}
@@ -186,8 +140,8 @@ export default function SearchScreen({navigation}){
 		}, 1000)
 
 		return(
-			<View style={{flex: 1, padding: 20}}>
-				<Text style={{fontStyle: 'italic'}}>Mọi người cũng tìm: </Text>
+			<View style={{flex: 1, padding: 20, backgroundColor: '#fafafa'}}>
+				<Text style={{fontStyle: 'italic'}}>{i18n.t('timkiem')}</Text>
 				<FlatList 
 					style = {{flex: 1, marginTop: 20}}
 					data={keyTop} 
@@ -225,6 +179,7 @@ const styles = StyleSheet.create({
 
 	container:{
 		flex: 1,
+		backgroundColor: '#fafafa'
 	},
 
 	containerBook:{

@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Sách Y Học Miễn Phí",
-    "slug": "sach-y-hoc-mien-phi",
-    "description": "Tải không giới hạn sách y học miễn phí chất lượng cao.",
-    "version": "1.1.5",
+    "name": "Medical Books Free",
+    "slug": "medical-books-free-pdf-download",
+    "description": "Medical books free download, download medical books pdf unlimite",
+    "version": "1.1.7",
     "facebookAppId":"462783274861073",
     "facebookAutoInitEnabled": true,
-    "facebookDisplayName":"Sách Y Học Miễn Phí",
+    "facebookDisplayName":"Medical books free",
 
     "platforms": [
       "ios",
@@ -40,7 +40,7 @@
         "googleMobileAdsAppId": "ca-app-pub-6209888091137615~5765003393"
       },
       "package": "com.bsdaoquang.thuvienyhoc",
-      "versionCode": 16,
+      "versionCode": 18,
       "permissions": [],
     },
     "web": {
