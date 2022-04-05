@@ -169,7 +169,7 @@ export default function BookSingle({ route, navigation }){
 				alert(i18n.t('diemkhongdu') + ' ' + i18n.t('vuilongnapthem'))
 			}
 		}else{
-			alert(i18n.t('vuilongdangnhap'))
+			navigation.navigate('Đăng nhập')
 		}
 
 	}
@@ -465,10 +465,10 @@ export default function BookSingle({ route, navigation }){
 						<Text style={{color: 'white'}}>{i18n.t('taingay')}</Text>
 					</TouchableOpacity>
 
-					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#2980b9'}}
+					{/*<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#2980b9'}}
 						onPress={() => downloadBook(ebook.downloadLink, ebook.countDown, 'down')}>
 						<Text style={{color: 'white'}}>{i18n.t('taimienphi')}</Text>
-					</TouchableOpacity>
+					</TouchableOpacity>*/}
 				</View>
 				
 			</View>

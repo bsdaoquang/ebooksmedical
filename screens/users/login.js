@@ -47,6 +47,10 @@ export default function LoginScreen({navigation}){
 		}
 	}
 
+	function loginWithGoogle(){
+		alert('login')
+	}
+
 	return(
 		<View style={styles.container}>
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -87,7 +91,6 @@ export default function LoginScreen({navigation}){
 					<TouchableOpacity onPress={() => navigation.navigate('Đăng ký')}>
 						<Text style={{color: '#2980b9', marginTop: 20, fontStyle: 'italic'}}>{i18n.t('taotaikhoan')}</Text>
 					</TouchableOpacity>
-					
 				</View>
 			</TouchableWithoutFeedback>
 		</View>	
