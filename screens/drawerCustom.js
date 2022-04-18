@@ -77,6 +77,7 @@ export default function DrawerCustom({navigation}){
 	function showToast(){
 		ToastAndroid.show(local == 'vi-VN' ? 'Đang phát triển' : 'Developing', ToastAndroid.SHORT)
 	}
+
 	return(
 		<ScrollView style={styles.drawerContain}>
 			{
@@ -92,7 +93,7 @@ export default function DrawerCustom({navigation}){
 							<Text style={{color: '#34495e', fontWeight: 'bold', textTransform: 'uppercase', fontSize: 20, paddingHorizontal: 5}}>{userData.displayName}</Text>
 						</View>
 						
-						<Text style={{fontStyle: 'italic', color: 'coral', textTransform: 'capitalize'}}>{userData.medCoin + ' ' + i18n.t('diem')}</Text>
+						<Text style={{fontStyle: 'italic', color: 'coral', textTransform: 'capitalize'}}>{userData.medCoin + 'đ'}</Text>
 					</View>
 				</View>
 				:
@@ -125,7 +126,7 @@ export default function DrawerCustom({navigation}){
 							<Text style={styles.items}>{i18n.t('tinnhan')} {countAlerts > 0 ? <Text style={{color: 'red'}}>({countAlerts})</Text> : null}</Text>
 						</TouchableOpacity>
 
-						<TouchableOpacity style={styles.button} onPress={() => showToast()}>
+						<TouchableOpacity style={styles.button} onPress={() => Linking.openURL('https://thuvien-eef7b.web.app/xuat-ban.html')}>
 							<FontAwesome name="upload" size={24} color="#34495e" style={styles.iconItems}/>
 							<Text style={styles.items}>{i18n.t('tailen')}</Text>
 						</TouchableOpacity>
@@ -152,6 +153,11 @@ export default function DrawerCustom({navigation}){
 						>
 							<AntDesign name="poweroff" size={20} color="red" style={{...styles.iconItems, color: 'red'}}/>
 							<Text style={{...styles.items, color: 'red'}}>{i18n.t('dangxuat')}</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Quản lý')}>
+							<MaterialIcons name="admin-panel-settings" size={24} style={{...styles.iconItems}} />
+							<Text>Quản lý</Text>
 						</TouchableOpacity>
 					</View>
 				</View>

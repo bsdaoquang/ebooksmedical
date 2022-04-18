@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import { Text, View, StyleSheet, Image, FlatList, ScrollView,TouchableOpacity, SafeAreaView, Alert, TextInput,
-		useWindowDimensions, StatusBar, ToastAndroid
+		useWindowDimensions, StatusBar, ToastAndroid, Modal
 	} from 'react-native'
 import { AntDesign, Entypo, Feather, Ionicons } from '@expo/vector-icons';
 import {firebaseApp} from '../firebaseConfig'
@@ -9,6 +9,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import * as Linking from 'expo-linking';
 import NetInfo from '@react-native-community/netinfo';
 import i18n from '../i18n'
+import * as DocumentPicker from 'expo-document-picker';
 
 export default function HomeScreen({navigation}){
 	const [net, setNet] = useState(true)
@@ -23,7 +24,7 @@ export default function HomeScreen({navigation}){
 	const getNewBook = async() => {
 		await firebaseApp.database().ref('Ebooks').orderByChild('type').equalTo('Ebook').limitToLast(10).on('value', (snapshot) => {
 			snapshot.forEach(item => {
-				if (item.val().status !== 'Bản nháp' && item.val().type === 'Ebook') {
+				if (item.val().status == 'Đã tải lên') {
 					var ebook = {}
 			  		ebook = item.val()
 			  		ebook.key = item.key
@@ -50,12 +51,10 @@ export default function HomeScreen({navigation}){
 	const getTopDown = async () => {
 		await firebaseApp.database().ref('Ebooks').orderByChild('countDown').limitToLast(5).on('value', snap => {
 			snap.forEach(item => {
-				if (item.val().status !== 'Bản nháp' && item.val().type === 'Ebook') {
-					var ebook = {}
-			  		ebook = item.val()
-			  		ebook.key = item.key
-			  		TOPDOWNLOAD.unshift(ebook)
-				}
+				var ebook = {}
+		  		ebook = item.val()
+		  		ebook.key = item.key
+		  		TOPDOWNLOAD.unshift(ebook)
 		  		
 		  	})
 		})
@@ -66,13 +65,10 @@ export default function HomeScreen({navigation}){
 	const getTopView = async () => {
 		await firebaseApp.database().ref('Ebooks').orderByChild('countView').limitToLast(5).on('value', snapview => {
 			snapview.forEach(itemview => {
-				if (itemview.val().status !== 'Bản nháp' && itemview.val().type === 'Ebook') {
-					var ebook = {}
-			  		ebook = itemview.val()
-			  		ebook.key = itemview.key
-			  		TOPVIEW.unshift(ebook)
-				}
-		  		
+				var ebook = {}
+		  		ebook = itemview.val()
+		  		ebook.key = itemview.key
+		  		TOPVIEW.unshift(ebook)
 		  	})
 		})
 	}
@@ -86,6 +82,8 @@ export default function HomeScreen({navigation}){
 			setUid(user.uid)
 		}
 	})
+
+	console.log(uid)
 
 	var dataUser = {}	
 	const loadDataUser = async() => {
@@ -224,17 +222,8 @@ export default function HomeScreen({navigation}){
 							        	<Text style={{...styles.title, fontWeight: 'normal'}}>{i18n.t('welcome')}</Text>
 							        	<Text style={{fontWeight: 'bold', fontSize: 24}}>{dataUser.displayName}</Text>
 						        	</View>
-						        	<View style={{
-						        		borderRadius: 50, 
-						        		backgroundColor: 'coral', 
-						        		justifyContents: 'center',
-						        		padding: 5,
-						        		width: 60,
-						        		height: 60}}>
-						        		<View style={{flex: 1, alignItems: 'center'}}>
-						        			<Text style={{color: 'white', fontWeight: 'bold', fontSize: 20}}>{dataUser.medCoin}</Text>
-											<Text style={{color: 'white'}}>{i18n.t('diem')}</Text>	
-						        		</View>
+						        	<View>
+						        		<Text>{dataUser.medCoin} đ</Text>
 						        	</View>
 				        		</TouchableOpacity>
 								
@@ -261,7 +250,7 @@ export default function HomeScreen({navigation}){
 				        	<AntDesign name="search1" size={20} color="#34495e" />
 				        </TouchableOpacity>
 
-				        <TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => navigation.navigate('Upload')}>
+				        <TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => Linking.openURL('https://thuvien-eef7b.web.app/xuat-ban.html')}>
 				        	<AntDesign name="upload" size={24} color="#34495e" />
 				        </TouchableOpacity>	
 			        </View>
@@ -279,7 +268,7 @@ export default function HomeScreen({navigation}){
 				  			data={EBOOKS}
 				  			renderItem={({ item }) => (
 				                <TouchableOpacity
-				                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title, uid: uid})}>
+				                   	onPress = {() => navigation.navigate('BookSingle', {bookId: item.key, title:item.title})}>
 					            	<Image style={styles.bookImg} source={{uri: item.image}}/>
 				                </TouchableOpacity>
 					        )}
@@ -333,6 +322,42 @@ export default function HomeScreen({navigation}){
 		
 	);
 }
+
+// export const uploadBook = async () => {
+
+// 	var uri = ''
+
+// 	let result = await DocumentPicker.getDocumentAsync({ type: "*/*", copyToCacheDirectory: true }).then(response => {
+// 		if (response.type == 'success') {
+// 			uri = response.uri
+// 		}
+// 	})
+
+// 	const blob = await new Promise((resolve, reject) => {
+//   		const xhr = new XMLHttpRequest();
+//   		xhr.onload = function () {
+//   			resolve(xhr.response);
+//   		};
+//   		xhr.onerror = function (e) {
+//   			console.log(e);
+//   			reject(new TypeError("Lỗi kết nối"));
+//   		};
+//   		xhr.responseType = "blob";
+//   		xhr.open("GET", uri, true);
+//   		xhr.send(null);
+//   	});
+
+//   	const ref = firebaseApp.storage().ref().child('ebooks/');
+//   	const snapshot = await ref.put(blob);
+
+// 	// We're done with the blob, close and release it
+// 	blob.close();
+
+// 	var downloadLink = await snapshot.ref.getDownloadURL();
+
+// 	//đến đây là lấy được file, vậy làm sao up nó lên và lấy link download được
+// 	console.log(downloadLink)
+// }
 
 const styles = StyleSheet.create({
 

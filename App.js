@@ -34,6 +34,10 @@ import PaymentsScreen from './screens/users/payments'
 import MyAlerts from './screens/my-alerts'
 import MyBooksScreen from './screens/books/my-books'
 
+import ManagerScreen from './screens/manager'
+import ManaUserList from './screens/users/manaUserList'
+import UploadScreen from './screens/uploadScreen'
+
 const Drawer = createDrawerNavigator();
 
 const StackEbooks = createStackNavigator();
@@ -54,6 +58,9 @@ function EbookStackScreen(){
           <StackEbooks.Screen name="Nhận điểm" component={PaymentsScreen}/>
           <StackEbooks.Screen name="Thông báo" component={MyAlerts}/>
           <StackEbooks.Screen name="Sách tải lên" component={MyBooksScreen}/>
+          <StackEbooks.Screen name="Quản lý" component={ManagerScreen}/>
+          <StackEbooks.Screen name="Danh sách người dùng" component={ManaUserList}/>
+          <StackEbooks.Screen name="Upload" component={UploadScreen}/>
         </StackEbooks.Navigator>
     )
 }

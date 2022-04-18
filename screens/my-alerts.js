@@ -5,6 +5,8 @@ import {
 import { Ionicons } from '@expo/vector-icons'; 
 import {firebaseApp} from '../firebaseConfig'
 import i18n from '../i18n'
+import { FontAwesome } from '@expo/vector-icons'; 
+
 
 export default function MyAlerts({navigation, route}){
 
@@ -29,12 +31,26 @@ export default function MyAlerts({navigation, route}){
 
     		headerRight: () => (
     			<TouchableOpacity style={{paddingHorizontal: 20}}
-    				onPress={() => ToastAndroid.show(local == 'vi-VN' ? 'Đánh dấu tất cả là đã đọc' : 'read all', ToastAndroid.SHORT)}>
+    				onPress={() => readAllCheck()}>
     				<Ionicons name="checkmark-done-sharp" size={24} color="#34495e" />
     			</TouchableOpacity>	
     		)
 	    });
   	}, [navigation]);
+
+  	function readAllCheck(){
+  		//Chuyển tất cả thông báo thành đã đọc
+
+  		firebaseApp.database().ref('Users').child(uid).child('alerts').once('value', snap => {
+  			snap.forEach(item => {
+  				firebaseApp.database().ref('Users').child(uid).child('alerts').child(item.key).update({
+  					read: true
+  				})
+  			})
+  		})
+
+  		ToastAndroid.show('Đánh dấu tất cả là đã đọc', ToastAndroid.SHORT)
+  	}
 
 	var alerts = []
 
@@ -141,19 +157,33 @@ export default function MyAlerts({navigation, route}){
 		setLoad(true)
 	}, 1000)
 
+	function deleteAlert(key){
+		firebaseApp.database().ref('Users').child(uid).child('alerts').child(key).remove().then(() => {
+			ToastAndroid.show('Đã xóa', ToastAndroid.SHORT)
+			setLoad(false)
+		})
+	}
+
 	return(
 		<View style={styles.container}>
 			<View style={styles.inner}>
 				<FlatList
 		  			data={alerts} 
 		  			renderItem={({ item }) => (
-		                <TouchableOpacity style={styles.btnAlert}
-		                	onPress={() => readAlert(item.title, item.key, item.alertkey, item)}
-		                >
-		                	<Text style={{...styles.text, fontWeight: item.read === false ? 'bold' : 'normal'}}>{item.title}</Text>
-		                   	<Text style={styles.text}>{item.title === 'Bình luận mới' ? item.displayName : ''} {item.content} {item.title === 'Bình luận mới' ? 'bạn.' : ''}</Text>
-		                   	<Text style={styles.text}>{item.date}</Text>
-		                </TouchableOpacity>
+		  				<View style={{...styles.btnAlert, flexDirection: 'row'}}>
+		  					<TouchableOpacity style={{flex: 1}}
+			                	onPress={() => readAlert(item.title, item.key, item.alertkey, item)}
+			                >
+			                	<Text style={{...styles.text, fontWeight: item.read === false ? 'bold' : 'normal'}}>{item.title}</Text>
+			                   	<Text style={styles.text}>{item.title === 'Bình luận mới' ? item.displayName : ''} {item.content} {item.title === 'Bình luận mới' ? 'bạn.' : ''}</Text>
+			                   	<Text style={styles.text}>{item.date}</Text>
+			                   	<Text style={{color: '#676767'}}>{item.read == true ? 'Đã đọc' : 'Chưa đọc'}</Text>
+			                </TouchableOpacity>
+			                <TouchableOpacity onPress={() => deleteAlert(item.alertkey)}>
+			                	<FontAwesome name="trash" size={20} color="#676767" />
+			                </TouchableOpacity>
+		  				</View>
+		                
 			        )}
 		  	 		keyExtractor={item => item.alertkey}
 	  	 		/>
@@ -239,6 +269,7 @@ const styles = StyleSheet.create({
 	},
 
 	btnAlert:{
+		flex: 1,
 		paddingVertical: 10,
 		borderBottomColor: '#e0e0e0',
 		borderBottomWidth: 1

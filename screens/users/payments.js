@@ -9,7 +9,12 @@ import * as Linking from 'expo-linking';
 
 export default function PaymentsScreen({navigation, route}){
 
-	var {email, uid} = route.params
+	var {uid} = route.params
+	var email 
+
+	firebaseApp.database().ref('Users').child(uid).on('value', snap => {
+		email = snap.val().email
+	})
 
 	React.useLayoutEffect(() => {
 	    navigation.setOptions({
@@ -71,62 +76,11 @@ export default function PaymentsScreen({navigation, route}){
 		}
 	};
 
-  	const [image, setImage] = useState(null);
-
-  	useEffect(() => {
-  		(async () => {
-  			if (Platform.OS !== 'web') {
-  				const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  				if (status !== 'granted') {
-  					alert('Xin lỗi. bạn phải cấp quyền truy cập để chức năng này có thể hoạt động');
-  				}
-  			}
-  		})();
-  	}, []);
-
-  	const pickImage = async () => {
-  		let result = await ImagePicker.launchImageLibraryAsync({
-  			mediaTypes: ImagePicker.MediaTypeOptions.All,
-  			allowsEditing: true,
-  			aspect: [2, 4],
-  			quality: 0.5,
-  		});
-
-  		if (!result.cancelled) {
-  			setImage(result.uri);
-  		}
-  	};
-
   	async function guiyeucau(){
-	  	const blob = await new Promise((resolve, reject) => {
-	  		const xhr = new XMLHttpRequest();
-	  		xhr.onload = function () {
-	  			resolve(xhr.response);
-	  		};
-	  		xhr.onerror = function (e) {
-	  			console.log(e);
-	  			reject(new TypeError("Lỗi kết nối"));
-	  		};
-	  		xhr.responseType = "blob";
-	  		xhr.open("GET", image, true);
-	  		xhr.send(null);
-	  	});
-
-	  	const ref = firebaseApp.storage().ref().child('payments/' + email + (new Date().getTime()));
-	  	const snapshot = await ref.put(blob);
-
-		// We're done with the blob, close and release it
-		blob.close();
-
-		var imageLink = await snapshot.ref.getDownloadURL();
-
-		//uploadfirebase
-		//lưu vào lịch sử của người dùng
 		firebaseApp.database().ref('Users').child(uid).child('giaodich').push({
 			time: new Date().getTime(),
 			sotien: choice,
 			noidung: 'Mua điểm tải',
-			imgLink: imageLink,
 			trangthai: 'Chờ xác nhận',
 			loaigiaodich: 'Nạp'
 		}).then((snap) => {
@@ -134,7 +88,6 @@ export default function PaymentsScreen({navigation, route}){
 			firebaseApp.database().ref('Users').child('wbquswyP16TPO4xEBAu36P1d5P13').child('giaodich').push({
 				time: new Date().getTime(),
 				sotien: choice,
-				imgLink: imageLink,
 				trangthai: 'Chờ xác nhận',
 				noidung: 'Mua điểm tải từ ' + email,
 				loaigiaodich: 'Nạp',
@@ -189,7 +142,7 @@ export default function PaymentsScreen({navigation, route}){
 			<View style={styles.inner}>
 				<Text style={styles.desc}>Điểm tải là đơn vị tiền tệ trong phần mềm, dùng để tải nhanh ebook, tài liệu có trong phần mềm mà không cần xem quảng cáo.</Text>
 				
-				<Text style={styles.title}>Nhận điểm tải miễn phí</Text>
+				{/*<Text style={styles.title}>Nhận điểm tải miễn phí</Text>
 				<View style={styles.btnContainer}>
 					<TouchableOpacity style={styles.btn} onPress={() => ToastAndroid.show('Đang phát triển', ToastAndroid.SHORT)}>
 						<Text style={{...styles.desc, flex: 1}}>Mời bạn bè</Text>
@@ -205,7 +158,7 @@ export default function PaymentsScreen({navigation, route}){
 						<Text style={{...styles.desc, flex: 1}}>Upload tài liệu</Text>
 						<Text style={{...styles.desc, color: 'white', backgroundColor: 'coral', padding: 5, borderRadius: 10}}>+0.8 điểm mỗi lượt tải</Text>
 					</TouchableOpacity>
-				</View>
+				</View>*/}
 
 				<Text style={styles.title}>Mua thêm điểm tải</Text>
 				<View style={styles.btnContainer}>
@@ -225,33 +178,27 @@ export default function PaymentsScreen({navigation, route}){
 							<Text>Số tài khoản: 050089283911</Text>
 							<Text>Chủ tài khoản: Đào Văn Quang</Text>
 
-							<Text style={{marginTop: 15, fontWeight: 'bold'}}>2. Ví điện tử MOMO</Text>
+							<Text style={{marginVertical: 20}}>Hoặc</Text>
+
+							<Text style={{fontWeight: 'bold'}}>2. Ví điện tử MOMO</Text>
 							<Text>Số tài khoản: 0328323686</Text>
 							<Text>Chủ tài khoản: Đào Văn Quang</Text>
 
-							<Text style={{marginTop: 15, fontWeight: 'bold'}}>Nội dung: Nạp {choice} điểm tải, email {email}</Text>
+							<Text style={{marginTop: 15, fontWeight: 'bold'}}>Nội dung: N{choice} {email}</Text>
 
-							<Text style={{...styles.desc, marginTop: 20}}>Bước 2:</Text>
-							<Text>Chụp hình và gửi lên bằng chứng thanh toán thành công</Text>
-							{image && <Image source={{ uri: image }} style={{ width: 200, height: 400, marginVertical: 10 }} />}
-
-							<TouchableOpacity
-								onPress={pickImage}
-								style={{paddingVertical: 5, paddingHorizontal: 20, backgroundColor: '#1abc9c', width: '50%', marginTop: 20}}>
-								<Text style={{color: 'white'}}>Chọn hình ảnh</Text>
-							</TouchableOpacity>
-
-							<Text style={{...styles.desc, marginTop: 20}}>Bước 3:</Text>
-							<Text style={styles.desc}>Gửi yêu cầu nạp tiền</Text>
-
+							<Text style={{...styles.desc, marginTop: 20, fontWeight: 'bold'}}>Bước 2:</Text>
+							<Text>Chuyển đúng số tiền {choice}.000, nhớ nhập đúng nội dung chuyển tiền nhé</Text>
+							
+							<Text style={{...styles.desc, marginTop: 20, fontWeight: 'bold'}}>Bước 3:</Text>
 							<View style={{justifyContent: 'center', alignItems: 'center'}}>
+								<Text>Bấm vào xác nhận đã chuyển tiền</Text>
 								<TouchableOpacity 
 									onPress={() => guiyeucau()}
-									style={{backgroundColor: '#1abc9c', paddingVertical: 10, paddingHorizontal: 20, marginVertical: 10, justifyContent: 'center', borderRadius: 10}}>
-									<Text style={{color: 'white'}}>Gửi yêu cầu nạp tiền</Text>
+									style={{backgroundColor: '#1abc9c', paddingVertical: 10, paddingHorizontal: 20, marginVertical: 10, justifyContent: 'center', borderRadius: 5}}>
+									<Text style={{color: 'white'}}>Xác nhận đã chuyển tiền</Text>
 								</TouchableOpacity>
 							</View>
-							
+							<Text>Nếu bạn cần hỗ trợ, liên hệ Hotline: 0328323686</Text>
 						</View>
 					</View>
 					: null

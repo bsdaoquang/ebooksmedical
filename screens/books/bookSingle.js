@@ -18,7 +18,7 @@ import i18n from '../../i18n'
 var database = firebaseApp.database();
 
 export default function BookSingle({ route, navigation }){	
-	var {bookId, title, uid } = route.params;
+	var {bookId, title} = route.params;
 
 	const [id, setId] = useState(route.params.bookId)
 	
@@ -147,30 +147,55 @@ export default function BookSingle({ route, navigation }){
 		})
 	}
 
-	function downloadVIP(bookURL, down){
+	function downloadVIP(bookURL, down, price){
 		//Kiêm tra xem có đăng nhập không
 		var point = 0
-		if(uid){
-			firebaseApp.database().ref('Users').child(uid).on('value', snap => {
-				point = snap.val().medCoin * 1
-			})
 
-			if ((point * 1) > 0) {
-				firebaseApp.database().ref('Ebooks').child(id).update({
-					countDown: down + 1
-				})
-
-				firebaseApp.database().ref('Users').child(uid).update({
-					medCoin: point - 1
-				})
-
-				WebBrowser.openBrowserAsync('https://drive.google.com/uc?export=download&id=' + bookURL)
-			}else{
-				alert(i18n.t('diemkhongdu') + ' ' + i18n.t('vuilongnapthem'))
+		//Kiểm tra đăng nhập từ đây
+		firebaseApp.auth().onAuthStateChanged((user) => {
+			if(user){
+				console.log(user.uid)
 			}
-		}else{
-			navigation.navigate('Đăng nhập')
-		}
+		})
+		// if(uid){
+		// 	firebaseApp.database().ref('Users').child(uid).on('value', snap => {
+		// 		point = snap.val().medCoin * 1
+		// 	})
+
+		// 	if ((point * 1 - price * 1) >= 0) {
+		// 		firebaseApp.database().ref('Ebooks').child(id).update({
+		// 			countDown: down + 1
+		// 		})
+
+		// 		firebaseApp.database().ref('Users').child(uid).update({
+		// 			medCoin: point - (price * 1)
+		// 		})
+
+		// 		//Đi đến link tải
+		// 		//Link mới có dạng https://
+		// 		if (bookURL.split(':')[0] == 'https' || bookURL.split(':')[0] == 'http') {
+		// 			WebBrowser.openBrowserAsync(bookURL)
+		// 		}else{
+		// 			WebBrowser.openBrowserAsync('https://drive.google.com/uc?export=download&id=' + bookURL)
+		// 		}
+				
+		// 	}else{
+		// 		//Chỗ này hiện ra modal
+		// 		Alert.alert('Thông báo', 'Số điểm của bạn không đủ để tải sách, để tiếp tục vui lòng mua thêm điểm tải', [
+		// 			{
+		// 				text: 'Để lúc khác',
+		// 				onPress: () => console.log('Hủy'),
+		// 				style: 'cancel'
+		// 			},
+		// 			{
+		// 				text: 'Đi nạp tiền',
+		// 				onPress: () => navigation.navigate('Nhận điểm', {email: '', uid: uid}),
+		// 			}	
+		// 		])
+		// 	}
+		// }else{
+		// 	navigation.navigate('Đăng nhập')
+		// }
 
 	}
 
@@ -296,6 +321,14 @@ export default function BookSingle({ route, navigation }){
 			}else{
 				alert('Bạn cần phải đăng nhập trước')
 			}
+		})
+	}
+
+	function deleteBook(key){
+		//Xóa quyển sách
+		firebaseApp.database().ref('Ebooks').child(key).remove().then(() => {
+			ToastAndroid.show('Xóa thành công', ToastAndroid.SHORT)
+			navigation.goBack()
 		})
 	}
 
@@ -454,21 +487,25 @@ export default function BookSingle({ route, navigation }){
 					<MaterialIcons name={like === true ? 'bookmark' : 'bookmark-outline'} size={26} color={like === true ? '#3498db' : '#7f8b8b'}/>
 				</TouchableOpacity>
 
-				<TouchableOpacity style={{justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5}}
+				{/*<TouchableOpacity style={{justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5}}
 					onPress={() => downloadBook(ebook.downloadLink, ebook.countDown, 'view')}>
 					<Fontisto name="preview" size={24} color="#d35400" />
-				</TouchableOpacity>
+				</TouchableOpacity>*/}
 
-				<View style={{flexDirection: 'row', flex: 1}}>
-					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#d35400'}}
-						onPress={() => downloadVIP(ebook.downloadLink, ebook.countDown)}>
-						<Text style={{color: 'white'}}>{i18n.t('taingay')}</Text>
+				<View style={{flexDirection: 'row', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#d35400', flexDirection: 'row', justifyContents: 'center', alignItems: 'center'}}
+						onPress={() => downloadVIP(ebook.downloadLink, ebook.countDown, ebook.price)}>
+						<AntDesign name="download" size={24} color="white" />
+						<Text style={{color: 'white', paddingHorizontal: 8}}>{i18n.t('taingay') + ' ( ' + ebook.price + 'đ )'}</Text>
 					</TouchableOpacity>
-
-					{/*<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#2980b9'}}
-						onPress={() => downloadBook(ebook.downloadLink, ebook.countDown, 'down')}>
-						<Text style={{color: 'white'}}>{i18n.t('taimienphi')}</Text>
-					</TouchableOpacity>*/}
+					{/*{
+						uid == 'wbquswyP16TPO4xEBAu36P1d5P13' ?
+						<TouchableOpacity onPress={() => deleteBook(ebook.key)}>
+							<FontAwesome name="trash" size={24} color="#676767" />
+						</TouchableOpacity>
+						: null
+					}*/}
+					
 				</View>
 				
 			</View>
