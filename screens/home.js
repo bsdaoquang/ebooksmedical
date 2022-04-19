@@ -22,9 +22,9 @@ export default function HomeScreen({navigation}){
 	var TOPVIEW = []
 
 	const getNewBook = async() => {
-		await firebaseApp.database().ref('Ebooks').orderByChild('type').equalTo('Ebook').limitToLast(10).on('value', (snapshot) => {
+		await firebaseApp.database().ref('Ebooks').limitToLast(10).on('value', (snapshot) => {
 			snapshot.forEach(item => {
-				if (item.val().status == 'Đã tải lên') {
+				if (item.val().status == 'đã tải lên') {
 					var ebook = {}
 			  		ebook = item.val()
 			  		ebook.key = item.key
@@ -82,20 +82,6 @@ export default function HomeScreen({navigation}){
 			setUid(user.uid)
 		}
 	})
-
-	console.log(uid)
-
-	var dataUser = {}	
-	const loadDataUser = async() => {
-		await firebaseApp.database().ref('Users').child(uid).on('value', snapuser => {
-			dataUser = snapuser.val()
-			dataUser.key = uid
-		})
-	}
-
-	if (dataUser) {
-		loadDataUser()
-	}
 
 	var download = []
 	TOPDOWNLOAD.forEach(item => {
@@ -211,25 +197,6 @@ export default function HomeScreen({navigation}){
 				        hidden={true}
 				        backgroundColor='white'
 			        />
-
-			        {
-			        	dataUser ? 
-				        	dataUser.displayName !== undefined ?
-				        		<TouchableOpacity
-				        			onPress={() => navigation.navigate('ProfileScreen', {userData: dataUser})}
-				        			style={{flexDirection: 'row', backgroundColor: '#ecf0f1', padding: 10, borderRadius: 10, margin: 10}}>
-				        			<View style={{flex: 1}}>
-							        	<Text style={{...styles.title, fontWeight: 'normal'}}>{i18n.t('welcome')}</Text>
-							        	<Text style={{fontWeight: 'bold', fontSize: 24}}>{dataUser.displayName}</Text>
-						        	</View>
-						        	<View>
-						        		<Text>{dataUser.medCoin} đ</Text>
-						        	</View>
-				        		</TouchableOpacity>
-								
-				        	: null
-				        : null
-			        }
 			        <View style={{flexDirection: 'row', alignItems: 'center'}}>
 			        	<TouchableOpacity style={{paddingHorizontal: 10}} onPress={() => navigation.openDrawer()}>
 			        		<AntDesign name="menuunfold" size={28} color="#34495e" />

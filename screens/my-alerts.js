@@ -43,9 +43,7 @@ export default function MyAlerts({navigation, route}){
 
   		firebaseApp.database().ref('Users').child(uid).child('alerts').once('value', snap => {
   			snap.forEach(item => {
-  				firebaseApp.database().ref('Users').child(uid).child('alerts').child(item.key).update({
-  					read: true
-  				})
+  				firebaseApp.database().ref('Users').child(uid).child('alerts').child(item.key).remove()
   			})
   		})
 
@@ -115,7 +113,7 @@ export default function MyAlerts({navigation, route}){
 				title: 'Giao dịch bị hủy bỏ',
 				time: new Date().getTime(),
 				from: 'system',
-				content: 'Giao dịch mua '+ sotien +' điểm tải của bạn không thành công do chúng tôi không nhận được khoản thanh toán nào từ bạn. Để kiểm tra lại hãy gửi lại thông tin xác minh thanh toán hoặc liên hệ với chúng tôi qua https://m.me/yhocso. Thân',
+				content: 'Giao dịch nạp '+ sotien +'.000đ của bạn không thành công do chúng tôi không nhận được khoản thanh toán nào từ bạn. Để kiểm tra lại hãy gửi lại thông tin xác minh thanh toán hoặc liên hệ với chúng tôi qua https://m.me/yhocso. Thân',
 				read: false
 			})
 
@@ -133,7 +131,7 @@ export default function MyAlerts({navigation, route}){
 				title: 'Giao dịch hoàn thành',
 				time: new Date().getTime(),
 				from: 'system',
-				content: 'Giao dịch mua '+ sotien +' điểm tải của bạn đã được hoàn thành, cám ơn bạn đã sử dụng dịch vụ. Thân',
+				content: 'Giao dịch nạp '+ sotien +'.000đ của bạn đã được hoàn thành, cám ơn bạn đã sử dụng dịch vụ. Thân',
 				read: false
 			})
 
@@ -144,9 +142,8 @@ export default function MyAlerts({navigation, route}){
 			})
 			
 			firebaseApp.database().ref('Users').child(id).update({
-				medCoin: coin + sotien
+				medCoin: coin + (sotien * 1000)
 			})
-
 
 			setModalVisible(false)
 
@@ -220,8 +217,8 @@ export default function MyAlerts({navigation, route}){
 							</View>
 
 							<View style={{flexDirection: 'row'}}>
-								<Text style={styles.text}>Số điểm: </Text>
-								<Text style={styles.text}>{giaodich.sotien}</Text>
+								<Text style={styles.text}>Số tiền: </Text>
+								<Text style={styles.text}>{giaodich.sotien}.000đ</Text>
 							</View>
 							<Text style={styles.text}>Hình ảnh</Text>
 

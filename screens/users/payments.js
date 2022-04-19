@@ -32,14 +32,14 @@ export default function PaymentsScreen({navigation, route}){
   	}, [navigation]);
 
   	var goi = [
-  		{id: 1, point: 1, pay: '1.000đ'},
-  		{id: 5, point: 5, pay: '5.000đ'},
-  		{id: 10, point: 10, pay: '10.000đ'},
-  		{id: 20, point: 20, pay: '20.000đ'},
-  		{id: 50, point: 50, pay: '50.000đ'},
-  		{id: 100, point: 100, pay: '100.000đ'},
-  		{id: 200, point: 200, pay: '200.000đ'},
-  		{id: 500, point: 500, pay: '500.000đ'},
+  		{id: 1, point: "1.000"},
+  		{id: 5, point: "5.000"},
+  		{id: 10, point: "10.000"},
+  		{id: 20, point: "20.000"},
+  		{id: 50, point: "50.000"},
+  		{id: 100, point: "100.000"},
+  		{id: 200, point: "200.000"},
+  		{id: 500, point: "500.000"},
   	]
 
   	const [choice, setChoice] = useState(0)
@@ -80,7 +80,7 @@ export default function PaymentsScreen({navigation, route}){
 		firebaseApp.database().ref('Users').child(uid).child('giaodich').push({
 			time: new Date().getTime(),
 			sotien: choice,
-			noidung: 'Mua điểm tải',
+			noidung: 'Nạp tiền',
 			trangthai: 'Chờ xác nhận',
 			loaigiaodich: 'Nạp'
 		}).then((snap) => {
@@ -89,7 +89,7 @@ export default function PaymentsScreen({navigation, route}){
 				time: new Date().getTime(),
 				sotien: choice,
 				trangthai: 'Chờ xác nhận',
-				noidung: 'Mua điểm tải từ ' + email,
+				noidung: 'Nạp tiền từ ' + email,
 				loaigiaodich: 'Nạp',
 				uid: uid,
 				magiaodich: snap.key
@@ -111,7 +111,7 @@ export default function PaymentsScreen({navigation, route}){
 				title: 'Giao dịch mới',
 				time: new Date().getTime(),
 				from: 'system',
-				content: 'Giao dịch mua ' + choice + ' điểm tải của bạn đã được gửi đi thành công. Chúng tôi sẽ cộng điểm cho bạn ngay khi nhận được thanh toán.',
+				content: 'Giao dịch ' + choice + '.000đ của bạn đã được gửi đi thành công. Chúng tôi sẽ cộng điểm cho bạn ngay khi nhận được thanh toán.',
 				read: false
 			})
 		})
@@ -123,7 +123,7 @@ export default function PaymentsScreen({navigation, route}){
   	goi.forEach(item => {
   		goiContent.push(
   			<TouchableOpacity key={item.id}
-  				onPress={() => selectVipPackage(item.id, item.pay)}
+  				onPress={() => selectVipPackage(item.id, item.point)}
             	style={{...styles.btnPay, backgroundColor: choice === item.id ? '#1abc9c' : 'coral'}}>
             	{
             		choice === item.id ? 
@@ -131,8 +131,8 @@ export default function PaymentsScreen({navigation, route}){
             		: null
             	}
             	
-            	<Text style={styles.point}>{item.point}</Text>	
-            	<Text style={{...styles.desc, color: '#ecf0f1'}}>{item.pay}</Text>
+            	<Text style={styles.point}>{item.id}</Text>	
+            	<Text style={{...styles.desc, color: '#ecf0f1'}}>{item.point}đ</Text>
             </TouchableOpacity>
   		)
   	})
@@ -140,7 +140,7 @@ export default function PaymentsScreen({navigation, route}){
 	return(
 		<ScrollView style={styles.container}>
 			<View style={styles.inner}>
-				<Text style={styles.desc}>Điểm tải là đơn vị tiền tệ trong phần mềm, dùng để tải nhanh ebook, tài liệu có trong phần mềm mà không cần xem quảng cáo.</Text>
+				<Text style={styles.desc}>Tiền trong phần mềm, dùng để tải nhanh ebook, tài liệu có trong phần mềm mà không cần xem quảng cáo.</Text>
 				
 				{/*<Text style={styles.title}>Nhận điểm tải miễn phí</Text>
 				<View style={styles.btnContainer}>
@@ -160,7 +160,7 @@ export default function PaymentsScreen({navigation, route}){
 					</TouchableOpacity>
 				</View>*/}
 
-				<Text style={styles.title}>Mua thêm điểm tải</Text>
+				<Text style={styles.title}>Nạp tiền</Text>
 				<View style={styles.btnContainer}>
 					<Text style={styles.desc}>Chọn 1 trong các gói dưới đây</Text>
 					<View style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', paddingVertical: 10, justifyContent: 'center', alignItems: 'center'}}>
@@ -170,7 +170,7 @@ export default function PaymentsScreen({navigation, route}){
 
 				{choice !== 0 ?
 					<View>
-						<Text style={styles.title}>Hướng dẫn mua thêm điểm tải</Text>
+						<Text style={styles.title}>Hướng dẫn nạp tiền</Text>
 						<View style={styles.btnContainer}>
 							<Text style={styles.desc}>Bước 1:</Text>
 							<Text>Chuyển tiền vào tài khoản</Text>
@@ -187,7 +187,7 @@ export default function PaymentsScreen({navigation, route}){
 							<Text style={{marginTop: 15, fontWeight: 'bold'}}>Nội dung: N{choice} {email}</Text>
 
 							<Text style={{...styles.desc, marginTop: 20, fontWeight: 'bold'}}>Bước 2:</Text>
-							<Text>Chuyển đúng số tiền {choice}.000, nhớ nhập đúng nội dung chuyển tiền nhé</Text>
+							<Text>Chuyển đúng số tiền {choice}.000đ, nhớ nhập đúng nội dung chuyển tiền nhé</Text>
 							
 							<Text style={{...styles.desc, marginTop: 20, fontWeight: 'bold'}}>Bước 3:</Text>
 							<View style={{justifyContent: 'center', alignItems: 'center'}}>

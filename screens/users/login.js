@@ -10,21 +10,6 @@ import i18n from '../../i18n'
 
 export default function LoginScreen({navigation}){
 
-	React.useLayoutEffect(() => {
-	    navigation.setOptions({
-	    	headerTitle: '',
-	      	headerStyle:{
-    			backgroundColor: '#fafafa',
-    			shadowColor: 'transparent',
-		        shadowRadius: 0,
-		        shadowOffset: {
-		            height: 0,
-		        },
-		        elevation:0
-    		}
-	    });
-  	}, [navigation]);
-
 	const [email, setEmail] = useState('')
 	const [pass, setPass] = useState('')
 
@@ -45,10 +30,6 @@ export default function LoginScreen({navigation}){
 				alert(error)
 			});
 		}
-	}
-
-	function loginWithGoogle(){
-		alert('login')
 	}
 
 	return(
@@ -90,6 +71,10 @@ export default function LoginScreen({navigation}){
 
 					<TouchableOpacity onPress={() => navigation.navigate('Đăng ký')}>
 						<Text style={{color: '#2980b9', marginTop: 20, fontStyle: 'italic'}}>{i18n.t('taotaikhoan')}</Text>
+					</TouchableOpacity>
+
+					<TouchableOpacity onPress={() => loginGoogle()}>
+						<Text>Google</Text>
 					</TouchableOpacity>
 				</View>
 			</TouchableWithoutFeedback>

@@ -138,7 +138,7 @@ export default function DrawerCustom({navigation}){
 
 						<TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Nhận điểm', {email: userData.email, uid: uid})}>
 							<FontAwesome5 name="funnel-dollar" size={20} color="#34495e" style={styles.iconItems}/>
-							<Text style={styles.items}>{i18n.t('nhandiem')}</Text>
+							<Text style={styles.items}>Nạp tiền</Text>
 						</TouchableOpacity>
 
 						<TouchableOpacity style={styles.button}

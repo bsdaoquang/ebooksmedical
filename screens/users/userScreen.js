@@ -89,15 +89,15 @@ export default function ProfileScreen({navigation, route}){
 				<TouchableOpacity 
 					onPress={() => navigation.navigate('Nhận điểm', {email: userData.email, uid: userData.key})}
 					style={{alignItems: 'center'}}>
-					<Text style={{...styles.title, fontWeight: 'bold', fontSize: 24}}>{userData.medCoin}</Text>
-					<Text style={styles.desc}>{i18n.t('diem')}</Text>
+					<Text style={styles.desc}>Số dư của bạn</Text>
+					<Text style={{...styles.title, fontWeight: 'bold', fontSize: 24}}>{userData.medCoin}đ</Text>
 				</TouchableOpacity>
 
 				<TouchableOpacity
 					onPress={() => navigation.navigate('Sách tải lên', {uid: userData.key})}
 					style={{alignItems: 'center'}}>
-					<Text style={{...styles.title, fontWeight: 'bold', fontSize: 24}}>{countBook}</Text>
 					<Text style={styles.desc}>Ebooks</Text>
+					<Text style={{...styles.title, fontWeight: 'bold', fontSize: 24}}>{countBook}</Text>
 				</TouchableOpacity>
 			</View>
 

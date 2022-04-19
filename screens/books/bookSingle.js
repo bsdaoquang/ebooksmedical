@@ -147,56 +147,86 @@ export default function BookSingle({ route, navigation }){
 		})
 	}
 
-	function downloadVIP(bookURL, down, price){
+	function downloadVIP(bookURL, down, price, by){
 		//Kiêm tra xem có đăng nhập không
 		var point = 0
 
 		//Kiểm tra đăng nhập từ đây
 		firebaseApp.auth().onAuthStateChanged((user) => {
 			if(user){
-				console.log(user.uid)
+				firebaseApp.database().ref('Users').child(user.uid).on('value', snap => {
+					point = snap.val().medCoin * 1
+				})
+
+				if (price*1 > 0) {
+					if (by !== user.uid) {
+						//cộng điểm cho người dùng, không tự cộng cho chính mình
+						if ((point * 1 - price * 1) >= 0) {
+
+							// //Trừ tiền người dùng
+
+							firebaseApp.database().ref('Users').child(user.uid).update({
+								medCoin: point*1 - price*1
+							})
+
+							var coin = 0
+							
+							firebaseApp.database().ref('Users').child(by).on('value', snapuser => {
+								coin = (snapuser.val().medCoin * 1) + 0.9 * price
+							})
+
+							firebaseApp.database().ref('Users').child(by).update({
+								medCoin: coin
+							})
+
+							//lưu vào thông báo thanh toán
+							firebaseApp.database().ref('Users').child(by).child('alerts').push({
+								title: 'Lượt tải mới',
+								time: new Date().getTime(),
+								from: 'system',
+								content: 'Chúc mừng bạn nhận được số tiền: '+ (0.9 * price) +'đ vì có người đã tải ebook của bạn',
+								read: false
+							})
+						}
+
+						// Đi đến link tải
+						// Link mới có dạng https://
+						if (bookURL.split(':')[0] == 'https' || bookURL.split(':')[0] == 'http') {
+							WebBrowser.openBrowserAsync(bookURL)
+						}else{
+							WebBrowser.openBrowserAsync('https://drive.google.com/uc?export=download&id=' + bookURL)
+						}
+						
+					}else{
+						//Chỗ này hiện ra modal
+						Alert.alert('Thông báo', 'Số dư của bạn không đủ để tải sách, để tiếp tục vui lòng nạp thêm để có thể tải sách', [
+							{
+								text: 'Để lúc khác',
+								onPress: () => console.log('Hủy'),
+								style: 'cancel'
+							},
+							{
+								text: 'Đi nạp tiền',
+								onPress: () => navigation.navigate('Nhận điểm', {email: '', uid: user.uid}),
+							}	
+						])
+					}
+				}else{
+					if (bookURL.split(':')[0] == 'https' || bookURL.split(':')[0] == 'http') {
+						WebBrowser.openBrowserAsync(bookURL)
+					}else{
+						WebBrowser.openBrowserAsync('https://drive.google.com/uc?export=download&id=' + bookURL)
+					}
+				}
+
+				firebaseApp.database().ref('Ebooks').child(bookId).update({
+					countDown: down + 1
+				})
+				
+			}else{
+				navigation.navigate('Đăng nhập')
 			}
 		})
-		// if(uid){
-		// 	firebaseApp.database().ref('Users').child(uid).on('value', snap => {
-		// 		point = snap.val().medCoin * 1
-		// 	})
-
-		// 	if ((point * 1 - price * 1) >= 0) {
-		// 		firebaseApp.database().ref('Ebooks').child(id).update({
-		// 			countDown: down + 1
-		// 		})
-
-		// 		firebaseApp.database().ref('Users').child(uid).update({
-		// 			medCoin: point - (price * 1)
-		// 		})
-
-		// 		//Đi đến link tải
-		// 		//Link mới có dạng https://
-		// 		if (bookURL.split(':')[0] == 'https' || bookURL.split(':')[0] == 'http') {
-		// 			WebBrowser.openBrowserAsync(bookURL)
-		// 		}else{
-		// 			WebBrowser.openBrowserAsync('https://drive.google.com/uc?export=download&id=' + bookURL)
-		// 		}
-				
-		// 	}else{
-		// 		//Chỗ này hiện ra modal
-		// 		Alert.alert('Thông báo', 'Số điểm của bạn không đủ để tải sách, để tiếp tục vui lòng mua thêm điểm tải', [
-		// 			{
-		// 				text: 'Để lúc khác',
-		// 				onPress: () => console.log('Hủy'),
-		// 				style: 'cancel'
-		// 			},
-		// 			{
-		// 				text: 'Đi nạp tiền',
-		// 				onPress: () => navigation.navigate('Nhận điểm', {email: '', uid: uid}),
-		// 			}	
-		// 		])
-		// 	}
-		// }else{
-		// 	navigation.navigate('Đăng nhập')
-		// }
-
 	}
 
 	const onShare = async (title, description) => {
@@ -494,9 +524,9 @@ export default function BookSingle({ route, navigation }){
 
 				<View style={{flexDirection: 'row', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
 					<TouchableOpacity style={{...styles.btnDown, backgroundColor: '#d35400', flexDirection: 'row', justifyContents: 'center', alignItems: 'center'}}
-						onPress={() => downloadVIP(ebook.downloadLink, ebook.countDown, ebook.price)}>
+						onPress={() => downloadVIP(ebook.downloadLink, ebook.countDown, ebook.price, ebook.uploadBy)}>
 						<AntDesign name="download" size={24} color="white" />
-						<Text style={{color: 'white', paddingHorizontal: 8}}>{i18n.t('taingay') + ' ( ' + ebook.price + 'đ )'}</Text>
+						<Text style={{color: 'white', paddingHorizontal: 8}}>{i18n.t('taingay') + ' (' + (ebook.price == '0' ? 'Miễn phí' : ebook.price + 'đ') + ')'}</Text>
 					</TouchableOpacity>
 					{/*{
 						uid == 'wbquswyP16TPO4xEBAu36P1d5P13' ?
